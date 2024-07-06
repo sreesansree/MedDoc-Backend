@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      dafult:
+      default:
         "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
     },
     gender: {
@@ -39,9 +39,13 @@ const userSchema = new mongoose.Schema(
     bloodgroup: {
       type: String,
     },
-    token: {
+    otp: {
       type: String,
-      default: "",
+      required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     is_blocked: {
       type: Boolean,
@@ -50,5 +54,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 const User = mongoose.model("user", userSchema);
 export default User;
