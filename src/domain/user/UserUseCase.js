@@ -8,21 +8,18 @@ import { errorHandler } from "../../utils/error.js";
 class UserUseCase {
   // User Registration Use Case
   async register(userData) {
-    console.log(userData, "userData");
     const { name, email, password, mobile } = userData;
-
     if (
       !name ||
       !email ||
       !mobile ||
       !password ||
-      name === "" ||
-      email === "" ||
-      password === "" ||
-      mobile === ""
+      name === " " ||
+      email === " " ||
+      password === " " ||
+      mobile === " "
     ) {
-      
-      errorHandler(400, "All fields are required");
+      return errorHandler(400, "All fields are required");
     }
 
     const existingUser = await UserRepository.findByEmail(email);
@@ -56,19 +53,26 @@ class UserUseCase {
   // OTP Verification Use Case
   async verifyOtp(email, otp) {
     // Check if both email and otp are present in the request body
-    if (!email || !otp) {
-      return res.status(400).json({ error: "Email and OTP are required." });
+    if (!email && !otp) {
+      // return errorHandler(400, "All fields are required");
+      // return res.status(400).json({ error: "Email and OTP are required." });
+      return errorHandler(400, "Email and OTP are required ");
+    }
+    if (email && !otp) {
+      return errorHandler(400, "OTP required ");
+    }
+    if (!email && otp) {
+      return errorHandler(400, "Email required ");
     }
 
     const user = await UserRepository.findByEmail(email);
     if (!user) {
       // throw new Error("User not found");
-      errorHandler(400, "User not found");
+      return errorHandler(400, "User not found");
     }
-    // console.log(user.otp, "userOTp");
-    // console.log(otp, "otppppp");
+
     if (user.otp !== otp) {
-      throw new Error("Invalid OTP");
+      return errorHandler(400, "Invalid OTP");
     } else {
       user.isVerified = true;
       await user.save();
@@ -80,20 +84,20 @@ class UserUseCase {
 
   // User Login Use Case
   async login(email, password) {
-    const user = await UserRepository.findByEmail(email);
-
     if (!email || !password || email === " " || password === " ") {
-      errorHandler(400, "All fields are required");
+      return errorHandler(400, "All fields are required");
     }
+    const user = await UserRepository.findByEmail(email);
 
     if (!user || !user.isVerified) {
       // throw new Error("User not found or not verified");
-      errorHandler(400, "User not fount or not verified");
+      return errorHandler(400, "User not fount or not verified");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new Error("Invalid password");
+      // throw new Error("Invalid password");
+      return errorHandler(400, "Invalid password");
     }
 
     const token = generateToken(user, "user");
