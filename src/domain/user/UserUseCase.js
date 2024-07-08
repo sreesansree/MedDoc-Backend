@@ -21,6 +21,7 @@ class UserUseCase {
       password === "" ||
       mobile === ""
     ) {
+      
       errorHandler(400, "All fields are required");
     }
 
@@ -31,6 +32,7 @@ class UserUseCase {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
+    // const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Save the user with OTP but not verified
@@ -60,7 +62,8 @@ class UserUseCase {
 
     const user = await UserRepository.findByEmail(email);
     if (!user) {
-      throw new Error("User not found");
+      // throw new Error("User not found");
+      errorHandler(400, "User not found");
     }
     // console.log(user.otp, "userOTp");
     // console.log(otp, "otppppp");
@@ -77,13 +80,12 @@ class UserUseCase {
 
   // User Login Use Case
   async login(email, password) {
-    
     const user = await UserRepository.findByEmail(email);
 
-    if (!email || !password || email === "" || password === "") {
+    if (!email || !password || email === " " || password === " ") {
       errorHandler(400, "All fields are required");
     }
-    
+
     if (!user || !user.isVerified) {
       // throw new Error("User not found or not verified");
       errorHandler(400, "User not fount or not verified");
