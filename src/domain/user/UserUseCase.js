@@ -124,6 +124,7 @@ class UserUseCase {
           id: user._id,
           name: user.name,
           email: user.email,
+          profilePicture: user.profilePicture,
         },
       };
     } else {
@@ -148,7 +149,7 @@ class UserUseCase {
       await UserRepository.create(newUser);
       const token = generateToken(user, "user");
       return {
-        message: "Googel Login successful",
+        message: "Google Login successful",
         token,
         user: {
           id: user._id,
