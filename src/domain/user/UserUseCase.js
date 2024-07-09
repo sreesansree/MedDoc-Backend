@@ -102,7 +102,15 @@ class UserUseCase {
 
     const token = generateToken(user, "user");
 
-    return { message: "Login successful", token };
+    return {
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    };
   }
 }
 

@@ -34,11 +34,13 @@ class UserController {
       const { email, password } = req.body;
       const result = await UserService.login(email, password);
       // console.log(result, "resultttt from loginnn");
-      res.cookie("token", result.token, {
-        httpOnly: true,
-        maxAge: 5 * 60 * 60 * 1000, // 5 hours
-      });
-      res.status(200).json({ message: result.message });
+      res
+        .status(200)
+        .cookie("token", result.token, {
+          httpOnly: true,
+          maxAge: 5 * 60 * 60 * 1000, // 5 hours
+        })
+        .json({ message: result.message, user: result.user });
     } catch (error) {
       // res.status(400).json({ error: error.message });
       next(error);
