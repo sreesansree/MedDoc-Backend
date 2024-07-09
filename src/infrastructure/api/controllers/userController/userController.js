@@ -46,5 +46,22 @@ class UserController {
       next(error);
     }
   }
+  async google(req, res, next) {
+    try {
+      console.log(req.body, "req body google");
+      const { email, name, googlePhotoUrl } = req.body;
+      const result = await UserService.google(email, name, googlePhotoUrl);
+      console.log(result,'result from controllerr')
+      res
+        .status(200)
+        .cookie("token", result.token, {
+          httpOnly: true,
+          maxAge: 5 * 60 * 60 * 1000, // 5 hours
+        })
+        .json({ message: result.message, user: result.user });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 export default new UserController();

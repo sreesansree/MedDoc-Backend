@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     },
     mobile: {
       type: Number,
-      required: true,
+      // required: true,
     },
     password: {
       type: String,
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
     },
     otp: {
       type: String,
-      required: true,
+      // required: true,
     },
     isVerified: {
       type: Boolean,

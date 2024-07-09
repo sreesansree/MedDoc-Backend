@@ -101,7 +101,6 @@ class UserUseCase {
     }
 
     const token = generateToken(user, "user");
-
     return {
       message: "Login successful",
       token,
@@ -112,6 +111,53 @@ class UserUseCase {
       },
     };
   }
+  // User Login Google useCase
+  async google(email, name, googlePhotoUrl) {
+    const user = await UserRepository.findByEmail(email);
+    console.log(user, "user check in usercase");
+    if (user) {
+      const token = generateToken(user, "user");
+      return {
+        message: "Login successful",
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      };
+    } else {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+      console.log(
+        generatedPassword,
+        "generated password in googel usercase....."
+      );
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+      const newUser = new User({
+        name:
+          name.toLowerCase().split(" ").join("") +
+          Math.random().toString(9).slice(-4),
+        email,
+        password: hashedPassword,
+        profilePicture: googlePhotoUrl,
+        // isVerified: true,
+      });
+      newUser.isVerified = true;
+      await UserRepository.create(newUser);
+      const token = generateToken(user, "user");
+      return {
+        message: "Googel Login successful",
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profilePicture,
+        },
+      };
+    }
+  }
 }
-
 export default new UserUseCase();

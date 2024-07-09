@@ -6,9 +6,14 @@ class UserRepository {
   }
 
   async create(user) {
-    const newuser = new UserModel(user);
-    console.log(newuser,'new user from UserRepositoryyyy');
-    return await newuser.save();
+    try {
+      const newuser = new UserModel(user);
+      console.log(newuser, "new user from UserRepositoryyyy");
+      await newuser.save();
+      return newuser;
+    } catch (error) {
+      throw new Error("Error creating user: " + error.message);
+    }
   }
   async update(userId, updateData) {
     return await UserModel.findByIdAndUpdate(userId, updateData, { new: true });
