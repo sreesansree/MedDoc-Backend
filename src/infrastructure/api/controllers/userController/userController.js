@@ -34,6 +34,7 @@ class UserController {
       const { email, password } = req.body;
       const result = await UserService.login(email, password);
       // console.log(result, "resultttt from loginnn");
+
       res
         .status(200)
         .cookie("token", result.token, {

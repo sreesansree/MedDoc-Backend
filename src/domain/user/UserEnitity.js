@@ -33,6 +33,4 @@ class User {
     this.otp = otp;
   }
 }
-
-// module.exports = User;
 export default User;
