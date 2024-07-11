@@ -6,6 +6,8 @@ import { generateAdminToken, generateToken } from "../../utils/jwt.js";
 import { errorHandler } from "../../utils/error.js";
 
 class AdminUseCase {
+ 
+
   async login(email, password) {
     if (!email || !password || email === " " || password === " ") {
       return errorHandler(400, "All fields are required");
