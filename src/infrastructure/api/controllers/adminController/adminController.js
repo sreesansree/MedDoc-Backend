@@ -49,6 +49,8 @@ class AdminController {
         .status(200)
         .cookie("admintoken", result.admintoken, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === "production", // Use true if using HTTPS
+          sameSite: "None", // Important for cross-origin cookies
           maxAge: 5 * 60 * 60 * 1000,
         })
         .json({ message: result.message, admin: result.admin });

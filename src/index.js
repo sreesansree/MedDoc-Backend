@@ -18,8 +18,8 @@ app.use(morgan("dev"));
 
 // Configure CORS
 const corsOptions = {
-  origin: "*", // Allow only this origin
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  origin: "http://localhost:5173", // Allow only this origin
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true, // Allow cookies to be sent with requests
   optionsSuccessStatus: 204,
 };

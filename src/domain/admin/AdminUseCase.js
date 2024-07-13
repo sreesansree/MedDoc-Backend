@@ -6,8 +6,6 @@ import { generateAdminToken, generateToken } from "../../utils/jwt.js";
 import { errorHandler } from "../../utils/error.js";
 
 class AdminUseCase {
- 
-
   async login(email, password) {
     if (!email || !password || email === " " || password === " ") {
       return errorHandler(400, "All fields are required");
@@ -26,7 +24,8 @@ class AdminUseCase {
     //   generateAdminToken(res, admin._id);
     //   res.status(201)
     // }
-    const admintoken = generateToken(admin, "admin");
+    // const admintoken = generateToken(admin, "admin");
+    const admintoken = generateAdminToken(admin);
     return {
       message: "Admin Login Successful",
       admintoken,
