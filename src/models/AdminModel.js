@@ -1,5 +1,6 @@
+// models/Admin.js
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 
 const adminSchema = new mongoose.Schema({
   email: {
@@ -17,14 +18,18 @@ const adminSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    enum: ["user", "doctor", "admin"],
+    default: "admin",
   },
   createdAt: {
     type: Date,
     default: new Date(),
   },
 });
-adminSchema.pre("save",async function(){
-  this.password = await bcrypt.hash(this.password,12)
-})
+
+// adminSchema.pre("save", async function () {
+//   this.password = await bcrypt.hash(this.password, 12);
+// });
+
 const AdminModel = mongoose.model("Admin", adminSchema);
 export default AdminModel;

@@ -3,10 +3,8 @@ import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import connectDB from "./infrastructure/database/mongodb/connection.js";
-import userRoutes from "./infrastructure/api/routes/userRoutes.js";
-import adminRoutes from "./infrastructure/api/routes/adminRoutes.js";
-import { errorHandler, notFound } from "./middileware/middileware.js";
+import connectDB from "./config/db.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -25,23 +23,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// app.use(cors());
-
 app.use(express.json({ extended: true, limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
 app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes);
-
-/* app.use("/", (req, res) => {
-  res.status(200).send({
-    message: "Server Running",
-  });
-}); */
-
-// Error-handling middleware
-app.use(notFound);
-app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);

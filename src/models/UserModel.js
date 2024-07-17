@@ -51,6 +51,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       required: false,
     },
+    role: {
+      type: String,
+      enum: ["user", "doctor", "admin"],
+      default: "user",
+    },
+    // googleId: {
+    //   type: String,
+    // },
   },
   { timestamps: true }
 );
