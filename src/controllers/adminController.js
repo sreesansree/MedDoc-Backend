@@ -10,3 +10,9 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   });
   res.json(admin);
 });
+
+// Logout admin
+export const logoutAdmin = asyncHandler(async (req, res) => {
+  res.clearCookie("adminToken");
+  res.status(200).json({ message: "Logged out successfully" });
+});
