@@ -27,9 +27,20 @@ app.use(cors(corsOptions));
 app.use(express.json({ extended: true, limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
+
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);
+});
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || " Internal Server Error";
+  res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+  });
 });

@@ -20,12 +20,16 @@ const loginAdmin = async (email, password) => {
     // throw new Error("Invalid password");
   }
 
-  return {
-    _id: admin._id,
-    name: admin.name,
-    email: admin.email,
-    token: generateToken(admin._id),
-  };
+  if (admin && isMatch) {
+    return {
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      token: generateToken(admin._id),
+    };
+  } else {
+    return errorHandler(400, "Something went wrong");
+  }
 };
 
 export default { loginAdmin };

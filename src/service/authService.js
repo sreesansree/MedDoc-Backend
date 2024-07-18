@@ -40,7 +40,6 @@ import User from "../models/UserModel.js";
 
 const authenticateUser = async (email, password) => {
   const user = await User.findOne({ email });
-
   if (user && (await bcrypt.compare(password, user.password))) {
     if (!user.isVerified) {
       throw new Error("User not verified");
