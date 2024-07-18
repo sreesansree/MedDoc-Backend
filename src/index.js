@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
+import adminRoutes from "./routes/adminRoute.js";
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,7 @@ app.use(express.json({ extended: true, limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);
