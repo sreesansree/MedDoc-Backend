@@ -47,7 +47,9 @@ const loginUser = async ({ email, password }) => {
   const token = authService.generateToken(user);
   return { user, token };
 };
-const google = async ({ email, name, googlePhotoUrl }) => {
+
+ /*
+   const google = async ({ email, name, googlePhotoUrl }) => {
   try {
     if (!name) {
       throw new Error("Name is required for Google OAuth login.");
@@ -102,11 +104,11 @@ const google = async ({ email, name, googlePhotoUrl }) => {
     console.error("Error in Google OAuth login:", error);
     throw new Error("An error occurred during Google OAuth login.");
   }
-};
+}; */
 
 export default {
   registerUser,
   verifyOTP,
   loginUser,
-  google,
+  // google,
 };

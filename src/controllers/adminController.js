@@ -5,6 +5,7 @@ import { errorHandler } from "../utils/error.js";
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const admin = await adminUseCase.loginAdmin(email, password);
+  
   res.cookie("adminToken", admin.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

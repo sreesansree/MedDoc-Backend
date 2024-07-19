@@ -13,6 +13,8 @@ const loginAdmin = async (email, password) => {
   if (!admin) {
     return errorHandler(400, "Admin not found");
   }
+  console.log(password, "passworddddddd");
+  console.log(admin.password, "adminpassword");
   const isMatch = await bcrypt.compare(password, admin.password);
 
   if (!isMatch) {
