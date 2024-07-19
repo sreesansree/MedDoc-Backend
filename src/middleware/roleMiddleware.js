@@ -9,22 +9,23 @@ export const authorize = (...roles) => {
 
 // middleware/roleMiddleware.js
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-      next();
+  console.log(req.user, "req.userrr");
+  console.log(req.user.role, "req.userrr.roleee");
+  if (req.user && req.user.role === "admin") {
+    next();
   } else {
-      res.status(403);
-      throw new Error('Not authorized as an admin');
+    res.status(403);
+    throw new Error("Not authorized as an admin");
   }
 };
 
 const isDoctor = (req, res, next) => {
-  if (req.user && req.user.role === 'doctor') {
-      next();
+  if (req.user && req.user.role === "doctor") {
+    next();
   } else {
-      res.status(403);
-      throw new Error('Not authorized as a doctor');
+    res.status(403);
+    throw new Error("Not authorized as a doctor");
   }
 };
 
 export { isAdmin, isDoctor };
-
