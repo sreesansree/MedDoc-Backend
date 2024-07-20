@@ -31,9 +31,16 @@ export const protectAdmin = asyncHandler(async (req, res, next) => {
   if (req.cookies.adminToken) {
     try {
       token = req.cookies.adminToken;
+      console.log(token, "tokennnn");
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await Admin.findById(decoded.id).select("-password");
+      console.log(decoded, "decodeddddddd");
+      console.log(decoded.id, "decodeddddddd id");
 
+      req.user = await Admin.findById(decoded.id).select("-password");
+      console.log(req.user, "adminnnn");
+      if (!req.user) {
+        throw new Error("Admin not found");
+      }
       next();
     } catch (error) {
       return errorHandler(401, "Not authorized,token failed!!");

@@ -37,9 +37,11 @@ export default new AuthService();
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../models/UserModel.js";
+import Admin from "../models/AdminModel.js";
 
 const authenticateUser = async (email, password) => {
   const user = await User.findOne({ email });
+  // console.log(user)
   if (user && (await bcrypt.compare(password, user.password))) {
     if (!user.isVerified) {
       throw new Error("User not verified");
@@ -54,8 +56,25 @@ const authenticateUser = async (email, password) => {
   }
 };
 
+const authenticateAdmin = async (email, password) => {
+  // const admin = await Admin.findOne({ email });
+  const admin = await Admin.findOne({ email });
+  console.log(admin);
+  if (admin && (await bcrypt.compare(password, admin.password))) {
+    return {
+      id: admin._id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+      adminToken: generateToken(admin),
+    };
+  } else {
+    throw new Error("Invalid email or password");
+  }
+};
+
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
@@ -63,4 +82,5 @@ const generateToken = (user) => {
 export default {
   authenticateUser,
   generateToken,
+  authenticateAdmin,
 };

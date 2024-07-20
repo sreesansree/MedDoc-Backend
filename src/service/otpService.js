@@ -11,7 +11,15 @@ const sendOTP = async (email, otp) => {
   await sendEmail(email, subject, message);
 };
 
+const validateOtp = (storedOtp, otpExpires, enteredOtp) => {
+  if (Date.now() > otpExpires) {
+    return false;
+  }
+  return storedOtp === enteredOtp;
+};
+
 export default {
   generateOTP,
   sendOTP,
+  validateOtp
 };

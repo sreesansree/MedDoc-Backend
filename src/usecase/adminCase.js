@@ -4,12 +4,14 @@ import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
 import { generateToken } from "../utils/generateToken.js";
 import { errorHandler } from "../utils/error.js";
+import authService from "../service/authService.js";
 
-const loginAdmin = async (email, password) => {
+/* const loginAdmin = async (email, password) => {
   if (!email || !password || email === " " || password === " ") {
     return errorHandler(400, "All fields are required");
   }
   const admin = await Admin.findOne({ email });
+  console.log(admin);
   if (!admin) {
     return errorHandler(400, "Admin not found");
   }
@@ -32,6 +34,14 @@ const loginAdmin = async (email, password) => {
   } else {
     return errorHandler(400, "Something went wrong");
   }
+}; */
+
+const loginAdmin = async (email, password) => {
+  const admin = await authService.authenticateAdmin(email, password);
+  console.log(admin, "admin");
+  const adminToken = admin.adminToken;
+  // const adminToken = generateToken(admin);
+  return { admin, adminToken };
 };
 
 export default { loginAdmin };
