@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import Admin from "../models/AdminModel.js";
 import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
-import { generateToken } from "../utils/generateToken.js";
+import { generateToken } from "../utils/authUtils.js";
 import { errorHandler } from "../utils/error.js";
 import authService from "../service/authService.js";
 

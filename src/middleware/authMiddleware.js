@@ -50,3 +50,29 @@ export const protectAdmin = asyncHandler(async (req, res, next) => {
     return errorHandler(401, "Not authorized, no token");
   }
 });
+
+export const protectDoctor = asyncHandler(async (req, res, next) => {
+  let token;
+  // console.log(req.cookies.adminToken,'adminTokeen');
+  if (req.cookies.doctorToken) {
+    try {
+      token = req.cookies.doctorToken;
+      console.log(token, "tokennnn");
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log(decoded, "decodeddddddd");
+      // console.log(decoded.id, "decodeddddddd id");
+      
+      req.user = await Doctor.findById(decoded.id).select("-password");
+      console.log(req.user, "doctorrr");
+      if (!req.user) {
+        throw new Error("Doctor not found");
+      }
+      next();
+    } catch (error) {
+      return errorHandler(401, "Not authorized,token failed!!");
+    }
+  }
+  if (!token) {
+    return errorHandler(401, "Not authorized, no token");
+  }
+});

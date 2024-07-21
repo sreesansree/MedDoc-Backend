@@ -1,50 +1,44 @@
 // models/Doctor.js
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
 
-const doctorSchema = mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isApproved: {
-      type: Boolean,
-      default: false,
-    },
-    otp: String,
-    otpExpires: Date,
+const doctorSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
   },
-  {
-    timestamps: true,
-  }
-);
-
-doctorSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  isApproved: {
+    type: Boolean,
+    default: false,
+  },
+  otp: {
+    type: String,
+  },
+  otpExpires: {
+    type: Date,
+  },
+  is_blocked: {
+    type: Boolean,
+    required: false,
+  },
+  role: {
+    type: String,
+    enum: ["user", "doctor", "admin"],
+    default: "doctor",
+  },
 });
 
-doctorSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
 const Doctor = mongoose.model("Doctor", doctorSchema);
-
 export default Doctor;

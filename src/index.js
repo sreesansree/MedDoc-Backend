@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
+import doctorRoutes from "./routes/doctorRoute.js";
 
 dotenv.config();
 connectDB();
@@ -30,6 +31,7 @@ app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/doctor", doctorRoutes);
 
 app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);
