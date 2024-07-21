@@ -5,6 +5,7 @@ import {
   comparePassword,
 } from "../utils/authUtils.js";
 // import asyncHandler from "express-async-handler";
+import { errorHandler } from "../utils/error.js";
 
 import otpService from "../service/otpService.js";
 
@@ -38,7 +39,8 @@ export const verifyOtpUseCase = async (email, enteredOtp) => {
     !doctor ||
     !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
   ) {
-    throw new Error("Invalid OTP or OTP has expired");
+    // throw new Error("Invalid OTP or OTP has expired");
+    return errorHandler(400, "Invalid OTP or OTP has expired");
   }
   doctor.is_blocked = false;
   doctor.isVerified = true;
@@ -52,20 +54,25 @@ export const verifyOtpUseCase = async (email, enteredOtp) => {
 export const loginDoctorUseCase = async (email, password) => {
   if (!email || !password) {
     throw new Error("please fill all the field");
+    // return errorHandler(400, "please fill all the field");
   }
   const doctor = await Doctor.findOne({ email });
   if (!doctor) {
     throw new Error("Doctor not Found");
+    // return errorHandler(400, "Doctor not Found");
   }
   if (!doctor.isVerified) {
     throw new Error("You have to verify your're account before login");
+    // return errorHandler(400, "You have to verify your're account before login");
   }
   if (doctor.is_blocked) {
     throw new Error("Your account got blocked by the admin");
+    // return errorHandler(400, "Your account got blocked by the admin");
   }
   const isPasswordValid = await comparePassword(password, doctor.password);
   if (!isPasswordValid) {
     throw new Error("Invalid password");
+    // return errorHandler(400, "Invalid password");
   }
   const doctorToken = generateToken({ id: doctor._id, role: "doctor" });
 

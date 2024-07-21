@@ -32,15 +32,19 @@ export const verifyOTP = asyncHandler(async (req, res) => {
 });
 
 export const loginDoctor = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const response = await loginDoctorUseCase(email, password);
+  try {
+    const { email, password } = req.body;
+    const response = await loginDoctorUseCase(email, password);
 
-  res.cookie("doctorToken", response.doctorToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 5 * 60 * 60 * 1000, // 5 hours
-  });
-  res.status(200).json({ message: "Login Successful", response });
+    res.cookie("doctorToken", response.doctorToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 5 * 60 * 60 * 1000, // 5 hours
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
 export const google = async (req, res, next) => {
@@ -71,9 +75,10 @@ export const google = async (req, res, next) => {
       await newDoctor.save();
       const token = authService.generateToken(newDoctor);
       const { password, ...rest } = newDoctor._doc;
+      console.log(newDoctor._doc, "doccc");
       res
         .status(200)
-        .cookie("token", token, {
+        .cookie("doctorToken", token, {
           httpOnly: true,
         })
         .json(rest);
