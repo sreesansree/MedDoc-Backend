@@ -38,6 +38,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../models/UserModel.js";
 import Admin from "../models/AdminModel.js";
+import Doctor from "../models/DoctorModel.js";
 
 const authenticateUser = async (email, password) => {
   const user = await User.findOne({ email });
@@ -72,6 +73,21 @@ const authenticateAdmin = async (email, password) => {
     throw new Error("Invalid email or password");
   }
 };
+const authenticateDoctor = async (email, password) => {
+  const doctor = await Doctor.findOne({ email });
+  console.log(doctor);
+  if (doctor && (await bcrypt.compare(password, doctor.password))) {
+    return {
+      id: doctor._id,
+      email: doctor.email,
+      name: doctor.name,
+      role: doctor.role,
+      doctorToken: generateToken(doctor),
+    };
+  } else {
+    throw new Error("Invalid email or password");
+  }
+};
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -83,4 +99,5 @@ export default {
   authenticateUser,
   generateToken,
   authenticateAdmin,
+  authenticateDoctor,
 };

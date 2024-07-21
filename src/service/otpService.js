@@ -15,6 +15,8 @@ const validateOtp = (storedOtp, otpExpires, enteredOtp) => {
   if (Date.now() > otpExpires) {
     return false;
   }
+  console.log(storedOtp,'storedOTP')
+  console.log(enteredOtp,'EnteredOTP')
   return storedOtp === enteredOtp;
 };
 

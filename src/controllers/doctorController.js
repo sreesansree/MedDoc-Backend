@@ -43,6 +43,46 @@ export const loginDoctor = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Login Successful", response });
 });
 
+export const google = async (req, res, next) => {
+  const { email, name, googlePhotoUrl } = req.body;
+  try {
+    const doctor = await Doctor.findOne({ email });
+    if (doctor) {
+      const token = await authService.generateToken(doctor);
+      const { password, ...rest } = doctor._doc;
+      res
+        .status(200)
+        .cookie("doctorToken", token, {
+          httpOnly: true,
+        })
+        .json(rest);
+    } else {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+      const newDoctor = new Doctor({
+        name,
+        email,
+        password: hashedPassword,
+        profilePicture: googlePhotoUrl,
+      });
+      newDoctor.isVerified = true;
+      await newDoctor.save();
+      const token = authService.generateToken(newDoctor);
+      const { password, ...rest } = newDoctor._doc;
+      res
+        .status(200)
+        .cookie("token", token, {
+          httpOnly: true,
+        })
+        .json(rest);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const logoutDoctor = asyncHandler(async (req, res) => {
   res.clearCookie("doctorToken");
   res.status(200).json({ message: "Logout successfull" });

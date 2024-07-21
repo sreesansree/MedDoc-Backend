@@ -65,7 +65,7 @@ export const google = async (req, res, next) => {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-      const hashedPassword = bcrypt.hash(generatedPassword, 10);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
       const newUser = new User({
         name:
           name.toLowerCase().split(" ").join("") +
@@ -79,7 +79,7 @@ export const google = async (req, res, next) => {
       const token = authService.generateToken(newUser);
       const { password, ...rest } = newUser._doc;
       res
-        .statu(200)
+        .status(200)
         .cookie("token", token, {
           httpOnly: true,
         })

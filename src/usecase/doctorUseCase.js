@@ -27,6 +27,7 @@ export const registerDoctorUseCase = async (name, email, password) => {
 
   await doctor.save();
   await otpService.sendOTP(email, otp);
+  console.log(otpService.sendOTP(email, otp));
 
   return doctor;
 };
