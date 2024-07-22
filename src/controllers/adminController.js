@@ -1,6 +1,8 @@
 import adminUseCase from "../usecase/adminCase.js";
 import asyncHandler from "express-async-handler";
 import { errorHandler } from "../utils/error.js";
+import Doctor from "../models/DoctorModel.js";
+import User from "../models/UserModel.js";
 // Login admin
 export const loginAdmin = asyncHandler(async (req, res) => {
   try {
@@ -21,10 +23,91 @@ export const loginAdmin = asyncHandler(async (req, res) => {
 // Logout admin
 export const logoutAdmin = asyncHandler(async (req, res) => {
   try {
-    console.log('Logging out admin');
+    console.log("Logging out admin");
     res.clearCookie("adminToken").status(200).json("Admin has been logout");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     return errorHandler(400, error.message);
   }
 });
+
+// Get all doctors
+export const getDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find({});
+    console.log(doctors, "docterrrrrrr");
+
+    res.status(200).json(doctors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all users
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    console.log(users, "userrrrr");
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Block a user
+export const blockUser = async (req, res) => {
+  const { id } = req.params;
+  console.log(id, "block-user id");
+  try {
+    await User.findByIdAndUpdate(id, { is_blocked: true });
+    res.status(200).json({ message: "User blocked successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//Unblock a user
+
+export const unblockUser = async (req, res) => {
+  const { id } = req.params;
+  console.log((id, "un-block user id"));
+  try {
+    await User.findByIdAndUpdate(id, { is_blocked: false });
+    res.status(200).json({ message: "User Unblocked successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Approve a doctor
+export const approveDoctor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Doctor.findByIdAndUpdate(id, { isApproved: true });
+    res.status(200).json({ message: "Doctor approved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Block a doctor
+export const blockDoctor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Doctor.findByIdAndUpdate(id, { is_blocked: true });
+    res.status(200).json({ message: "Doctor blocked successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Unblock a doctor
+export const unblockDoctor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Doctor.findByIdAndUpdate(id, { is_blocked: false });
+    res.status(200).json({ message: "Doctor unblocked successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

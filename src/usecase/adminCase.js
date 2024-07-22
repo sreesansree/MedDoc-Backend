@@ -44,4 +44,5 @@ const loginAdmin = async (email, password) => {
   return { admin, adminToken };
 };
 
+
 export default { loginAdmin };
