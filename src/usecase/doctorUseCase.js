@@ -83,3 +83,35 @@ export const loginDoctorUseCase = async (email, password) => {
     doctorToken: doctorToken,
   };
 };
+
+export const initiatePasswordResetUseCase = async (email) => {
+  const doctor = await Doctor.findOne({ email });
+  if (!doctor) {
+    throw new Error("No Doctor Found with this email");
+  }
+  const resetToken = otpService.generateOTP();
+  doctor.otp = resetToken;
+  // console.log(doctor.otp,'doc otppppp');
+  doctor.otpExpires = Date.now() + 3600000; // 1 hour
+  await doctor.save();
+  // console.log(doctor,'doctorrr');
+  await otpService.sendOTP(email, resetToken);
+};
+
+export const completePasswordResetUseCase = async (
+  email,
+  enteredOtp,
+  newPassword
+) => {
+  const doctor = await Doctor.findOne({ email });
+
+  // console.log(doctor,'docotorrrr');
+  if (!doctor || !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)) {
+    throw new Error("Invalid OTP or OTP has Expired");
+  }
+  doctor.password = await hashPassword(newPassword);
+  doctor.otp = undefined;
+  doctor.otpExpires = undefined;
+  
+  await doctor.save();
+};

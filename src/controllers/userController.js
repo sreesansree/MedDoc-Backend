@@ -113,7 +113,7 @@ export const logoutUser = async (req, res) => {
 export const doctorsList = async (req, res) => {
   try {
     const doctors = await Doctor.find({});
-    console.log("Doctors fetched:", doctors); // Debugging log
+    // console.log("Doctors fetched:", doctors); // Debugging log
     res.status(200).json(doctors);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -122,7 +122,7 @@ export const doctorsList = async (req, res) => {
 
 export const initiatePasswordReset = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  console.log(req.body, "req.bodyyyyyy");
+  // console.log(req.body, "req.bodyyyyyy");
   await initiatePasswordResetUseCase(email);
   res.status(200).json({
     message: "Password reset initiated. check your email for the link.",
@@ -130,8 +130,8 @@ export const initiatePasswordReset = asyncHandler(async (req, res) => {
 });
 
 export const completePasswordReset = asyncHandler(async (req, res) => {
-  const { email, token, password } = req.body;
-  console.log(req.body, "req.bodyyyyy");
-  await completePasswordResetUseCase(email, token, password);
+  const { email, otp, password } = req.body;
+  // console.log(req.body, "req.bodyyyyy");
+  await completePasswordResetUseCase(email, otp, password);
   res.status(200).json({ message: "Password reset Successful." });
 });

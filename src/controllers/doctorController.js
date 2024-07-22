@@ -7,6 +7,8 @@ import {
   registerDoctorUseCase,
   verifyOtpUseCase,
   loginDoctorUseCase,
+  initiatePasswordResetUseCase,
+  completePasswordResetUseCase,
 } from "../usecase/doctorUseCase.js";
 
 export const registerDoctor = asyncHandler(async (req, res) => {
@@ -91,4 +93,20 @@ export const google = async (req, res, next) => {
 export const logoutDoctor = asyncHandler(async (req, res) => {
   res.clearCookie("doctorToken");
   res.status(200).json({ message: "Logout successfull" });
+});
+
+export const initiatePasswordReset = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  // console.log(req.body, "req.bodyyyyyyyyyy");
+  await initiatePasswordResetUseCase(email);
+  res.status(200).json({
+    message: "Password reset initiated. check your email for the link.",
+  });
+});
+
+export const completePasswordReset = asyncHandler(async (req, res) => {
+  const { email, otp, password } = req.body;
+  // console.log(req.body, "req.bodyyyyyyyyyyyyyyyyy");
+  await completePasswordResetUseCase(email, otp, password);
+  res.status(200).json({ message: "Password reset Successful." });
 });
