@@ -47,6 +47,9 @@ const authenticateUser = async (email, password) => {
     if (!user.isVerified) {
       throw new Error("User not verified");
     }
+    if (user.is_blocked) {
+      throw new Error("Your account got blocked by the admin");
+    }
     return {
       id: user._id,
       email: user.email,

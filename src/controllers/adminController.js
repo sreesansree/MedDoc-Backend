@@ -35,8 +35,7 @@ export const logoutAdmin = asyncHandler(async (req, res) => {
 export const getDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({});
-    console.log(doctors, "docterrrrrrr");
-
+    console.log("Doctors fetched:", doctors); // Debugging log
     res.status(200).json(doctors);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -47,7 +46,7 @@ export const getDoctors = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    console.log(users, "userrrrr");
+    // console.log(users, "userrrrr");
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -59,7 +58,7 @@ export const blockUser = async (req, res) => {
   const { id } = req.params;
   console.log(id, "block-user id");
   try {
-    await User.findByIdAndUpdate(id, { is_blocked: true });
+    await User.findByIdAndUpdate(id, { is_blocked: true }, { new: true });
     res.status(200).json({ message: "User blocked successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -93,8 +92,10 @@ export const approveDoctor = async (req, res) => {
 // Block a doctor
 export const blockDoctor = async (req, res) => {
   const { id } = req.params;
+  console.log(req.params, "paramsssss");
+  console.log(id,'iddddddddd');
   try {
-    await Doctor.findByIdAndUpdate(id, { is_blocked: true });
+    await Doctor.findByIdAndUpdate(id, { is_blocked: true }, { new: true });
     res.status(200).json({ message: "Doctor blocked successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -104,6 +105,8 @@ export const blockDoctor = async (req, res) => {
 // Unblock a doctor
 export const unblockDoctor = async (req, res) => {
   const { id } = req.params;
+  console.log(req.params, "paramsssss");
+  console.log(id,'iddddddddd');
   try {
     await Doctor.findByIdAndUpdate(id, { is_blocked: false });
     res.status(200).json({ message: "Doctor unblocked successfully" });

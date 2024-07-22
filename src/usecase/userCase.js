@@ -3,6 +3,7 @@ import User from "../models/UserModel.js";
 import otpService from "../service/otpService.js";
 import authService from "../service/authService.js";
 import bcrypt from "bcrypt";
+import { hashPassword } from "../utils/authUtils.js";
 
 const registerUser = async ({ name, email, mobile, password }) => {
   const userExists = await User.findOne({ email });
@@ -48,63 +49,36 @@ const loginUser = async ({ email, password }) => {
   return { user, token };
 };
 
- /*
-   const google = async ({ email, name, googlePhotoUrl }) => {
-  try {
-    if (!name) {
-      throw new Error("Name is required for Google OAuth login.");
-    }
-
-    const user = await User.findOne({ email }).maxTimeMS(5000);
-    console.log(user, "User Check google");
-
-    if (user) {
-      const token = await authService.generateToken(user);
-      return {
-        message: "Login Success with Google OAuth",
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          profilePicture: user.profilePicture,
-        },
-      };
-    } else {
-      const generatePassword =
-        Math.random().toString(36).slice(-8) +
-        Math.random().toString(36).slice(-8);
-
-      console.log(generatePassword, "generated password in googleee");
-      const hashedPassword = await bcrypt.hash(generatePassword, 10);
-      const newUser = new User({
-        name:
-          name.toLowerCase().split(" ").join("") +
-          Math.random().toString(9).slice(-4),
-        email,
-        password: hashedPassword,
-        profilePicture: googlePhotoUrl,
-      });
-      newUser.isVerified = true;
-      await newUser.save();
-      const token = await authService.generateToken(newUser);
-
-      return {
-        message: "Google Login Successful",
-        token,
-        user: {
-          id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          profilePicture: newUser.profilePicture,
-        },
-      };
-    }
-  } catch (error) {
-    console.error("Error in Google OAuth login:", error);
-    throw new Error("An error occurred during Google OAuth login.");
+export const initiatePasswordResetUseCase = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("No user found with this email");
   }
-}; */
+  const resetToken = otpService.generateOTP();
+  user.otp = resetToken;
+  user.otpExpires = Date.now() + 3600000; // 1 hour
+
+  await user.save();
+  await otpService.sendOTP(email, resetToken);
+};
+
+export const completePasswordResetUseCase = async (
+  email,
+  enteredOtp,
+  newPassword
+) => {
+  const user = await User.findOne({ email });
+  if (!user || !otpService.validateOtp(user.otp, user.otpExpires, enteredOtp)) {
+    throw new Error("Invalid OTP or OTP has Expired");
+  }
+  console.log('Hashing password:', newPassword);
+  user.password = await hashPassword(newPassword,)
+  console.log(user.password);
+  user.otp = undefined;
+  user.otpExpires = undefined;
+
+  await user.save();
+};
 
 export default {
   registerUser,
