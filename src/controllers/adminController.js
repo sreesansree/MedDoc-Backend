@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import { errorHandler } from "../utils/error.js";
 import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
+import Activity from "../models/ActivityModel.js";
 // Login admin
 export const loginAdmin = asyncHandler(async (req, res) => {
   try {
@@ -93,7 +94,7 @@ export const approveDoctor = async (req, res) => {
 export const blockDoctor = async (req, res) => {
   const { id } = req.params;
   console.log(req.params, "paramsssss");
-  console.log(id,'iddddddddd');
+  console.log(id, "iddddddddd");
   try {
     await Doctor.findByIdAndUpdate(id, { is_blocked: true }, { new: true });
     res.status(200).json({ message: "Doctor blocked successfully" });
@@ -106,11 +107,21 @@ export const blockDoctor = async (req, res) => {
 export const unblockDoctor = async (req, res) => {
   const { id } = req.params;
   console.log(req.params, "paramsssss");
-  console.log(id,'iddddddddd');
+  console.log(id, "iddddddddd");
   try {
     await Doctor.findByIdAndUpdate(id, { is_blocked: false });
     res.status(200).json({ message: "Doctor unblocked successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// recent activities
+export const recentActivity = async (req, res) => {
+  try {
+    const activities = await Activity.find().sort({ createdAt: -1 }).limit(10);
+    res.status(200).json(activities);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching recent activities" });
   }
 };
