@@ -44,5 +44,16 @@ const loginAdmin = async (email, password) => {
   return { admin, adminToken };
 };
 
+const getDoctorById = async (id) => {
+  return await Doctor.findById(id);
+};
 
-export default { loginAdmin };
+const approveDoctor = async (id) => {
+  return await Doctor.findByIdAndUpdate(
+    id,
+    { isApproved: true },
+    { new: true }
+  );
+};
+
+export default { loginAdmin, getDoctorById, approveDoctor };

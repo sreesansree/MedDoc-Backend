@@ -5,6 +5,7 @@ import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
 import Activity from "../models/ActivityModel.js";
 // Login admin
+
 export const loginAdmin = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -36,8 +37,22 @@ export const logoutAdmin = asyncHandler(async (req, res) => {
 export const getDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({});
-    console.log("Doctors fetched:", doctors); // Debugging log
+    // console.log("Doctors fetched:", doctors); // Debugging log
     res.status(200).json(doctors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// get single Doctor
+
+export const getDoctor = async (req, res) => {
+  try {
+    const doctor = await adminUseCase.getDoctorById(req.params.id);
+    console.log(doctor, "Single Doctor Fetched");
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    return res.status(200).json(doctor);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

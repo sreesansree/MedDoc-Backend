@@ -24,6 +24,14 @@ const doctorSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  certificate: {
+    type: String,
+    required: false,
+  },
+  qualification: {
+    type: String,
+    required: false,
+  },
   isApproved: {
     type: Boolean,
     default: false,

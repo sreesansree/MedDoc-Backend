@@ -11,6 +11,7 @@ import {
   unblockUser,
   unblockDoctor,
   recentActivity,
+  getDoctor,
 } from "../controllers/adminController.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
@@ -20,6 +21,7 @@ router.post("/login", loginAdmin);
 router.post("/logout", protectAdmin, isAdmin, logoutAdmin);
 
 router.get("/doctors", protectAdmin, getDoctors);
+router.get("/doctors/:id",protectAdmin,getDoctor)
 router.get("/users", protectAdmin, getUsers);
 router.get("/activities", protectAdmin, recentActivity);
 
