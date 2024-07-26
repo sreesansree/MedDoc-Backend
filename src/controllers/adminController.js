@@ -14,7 +14,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     res.cookie("adminToken", response.adminToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 15  * 60 * 60 * 1000, // 5 hours
+      maxAge: 15 * 60 * 60 * 1000, // 5 hours
     });
     res.status(200).json(response.admin);
   } catch (error) {
@@ -138,5 +138,67 @@ export const recentActivity = async (req, res) => {
     res.status(200).json(activities);
   } catch (error) {
     res.status(500).json({ message: "Error fetching recent activities" });
+  }
+};
+
+// Add department
+export const addDepartment = async (req, res) => {
+  const { name, description } = req.body;
+  console.log(req.body);
+  try {
+    const newDepartment = await adminUseCase.addDepartmentUseCase({
+      name,
+      description,
+    });
+    res.status(200).json(newDepartment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get department
+export const getDepartments = async (req, res) => {
+  try {
+    const department = await adminUseCase.getAllDepartmentUseCase();
+    res.status(200).json(department);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get Department By ID
+export const getDeparmentById = async (req, res) => {
+  try {
+    const department = await adminUseCase.getDepartmentByIdUseCase(
+      req.params.id
+    );
+    res.status(200).json(department);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update Department
+export const updateDepartment = async (req, res) => {
+  try {
+    const department = await adminUseCase.updateDepartmentUseCase(
+      req.params.id,
+      req.body
+    );
+    res.status(200).json(department);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete Department
+
+export const deleteDepartment = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await adminUseCase.deleteDepartmentUseCase(id);
+    res.status(200).json({ message: "Department deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
