@@ -14,7 +14,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     res.cookie("adminToken", response.adminToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 60 * 1000, // 5 hours
+      maxAge: 15  * 60 * 60 * 1000, // 5 hours
     });
     res.status(200).json(response.admin);
   } catch (error) {
