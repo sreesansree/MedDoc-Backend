@@ -144,8 +144,15 @@ export const recentActivity = async (req, res) => {
 // Add department
 export const addDepartment = async (req, res) => {
   const { name, description } = req.body;
-  console.log(req.body);
+
+  // Inline validation
+  // if (!name || !description) {
+  //   return res.status(400).json({ message: "All fields are required" });
+  // }
   try {
+    if (!name || !description) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
     const newDepartment = await adminUseCase.addDepartmentUseCase({
       name,
       description,
@@ -185,6 +192,7 @@ export const updateDepartment = async (req, res) => {
       req.params.id,
       req.body
     );
+
     res.status(200).json(department);
   } catch (error) {
     res.status(400).json({ message: error.message });
