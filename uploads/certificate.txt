@@ -1,0 +1,4 @@
+This is a sample certificate.
+Doctor: Dr. John Doe
+Certification: Board Certified in Cardiology
+Date: 2024-07-28

@@ -20,6 +20,9 @@ const doctorSchema = new mongoose.Schema({
     default:
       "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
   },
+  mobile: {
+    type: String,
+  },
   isVerified: {
     type: Boolean,
     default: false,
@@ -46,10 +49,19 @@ const doctorSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
+  state: {
+    type: String,
+    default: "kerala",
+  },
   role: {
     type: String,
     enum: ["user", "doctor", "admin"],
     default: "doctor",
+  },
+  department: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Department",
+    required: false,
   },
 });
 

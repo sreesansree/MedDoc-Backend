@@ -106,12 +106,59 @@ export const completePasswordResetUseCase = async (
   const doctor = await Doctor.findOne({ email });
 
   // console.log(doctor,'docotorrrr');
-  if (!doctor || !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)) {
+  if (
+    !doctor ||
+    !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
+  ) {
     throw new Error("Invalid OTP or OTP has Expired");
   }
   doctor.password = await hashPassword(newPassword);
   doctor.otp = undefined;
   doctor.otpExpires = undefined;
-  
+
   await doctor.save();
+};
+
+export const doctorProfilUpdateUseCase = async (doctorId, req) => {
+  const {
+    name,
+    email,
+    mobile,
+    profilePicture,
+    state,
+    qualification,
+    certificate,
+    department,
+  } = req.body;
+
+  if (!name) {
+    return errorHandler(400, "name is required");
+  }
+  if (!mobile) {
+    return errorHandler(400, "mobile number is required");
+  }
+  if (!state) {
+    return errorHandler(400, "mobile number is required");
+  }
+  if (!qualification) {
+    return errorHandler(400, "qualification is required");
+  }
+  const updatedData = {
+    name,
+    email,
+    mobile,
+    profilePicture,
+    state,
+    qualification,
+    department,
+  };
+  if (req.file) {
+    updatedData.certificate = req.file.path; // path to the uploaded file
+  }
+  const updatedDoctor = await Doctor.findByIdAndUpdate(
+    doctorId,
+    { $set: updatedData },
+    { new: true, runValidators: true }
+  );
+  return updatedDoctor;
 };

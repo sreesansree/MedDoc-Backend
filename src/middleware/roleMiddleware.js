@@ -20,6 +20,8 @@ const isAdmin = (req, res, next) => {
 };
 
 const isDoctor = (req, res, next) => {
+  console.log(req.user.role,'roleeeeeeeeeeee')
+  console.log(req.user,'req.userrrrrrrr')
   if (req.user && req.user.role === "doctor") {
     next();
   } else {

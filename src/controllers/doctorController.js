@@ -9,6 +9,7 @@ import {
   loginDoctorUseCase,
   initiatePasswordResetUseCase,
   completePasswordResetUseCase,
+  doctorProfilUpdateUseCase,
 } from "../usecase/doctorUseCase.js";
 
 export const registerDoctor = asyncHandler(async (req, res) => {
@@ -41,7 +42,7 @@ export const loginDoctor = asyncHandler(async (req, res) => {
     res.cookie("doctorToken", response.doctorToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 60 * 1000, // 5 hours
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
     res.status(200).json(response);
   } catch (error) {
@@ -109,4 +110,22 @@ export const completePasswordReset = asyncHandler(async (req, res) => {
   // console.log(req.body, "req.bodyyyyyyyyyyyyyyyyy");
   await completePasswordResetUseCase(email, otp, password);
   res.status(200).json({ message: "Password reset Successful." });
+});
+
+export const updateDoctorProfile = asyncHandler(async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const updatedData = req.body;
+    if (!updatedData) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const updatedDoctor = await doctorProfilUpdateUseCase(doctorId,req);
+    if (!updatedDoctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    res.status(200).json(updatedDoctor);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
