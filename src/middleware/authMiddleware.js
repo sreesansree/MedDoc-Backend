@@ -57,13 +57,13 @@ export const protectDoctor = asyncHandler(async (req, res, next) => {
   if (req.cookies.doctorToken) {
     try {
       token = req.cookies.doctorToken;
-      console.log(token, "tokennnn");
+      // console.log(token, "tokennnn");
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decoded, "decodeddddddd");
+      // console.log(decoded, "decodeddddddd");
       // console.log(decoded.id, "decodeddddddd id");
       
       req.user = await Doctor.findById(decoded.id).select("-password");
-      console.log(req.user, "doctorrr");
+      // console.log(req.user, "doctorrr");
       if (!req.user) {
         throw new Error("Doctor not found");
       }

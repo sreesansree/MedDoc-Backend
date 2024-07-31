@@ -9,8 +9,8 @@ export const authorize = (...roles) => {
 
 // middleware/roleMiddleware.js
 const isAdmin = (req, res, next) => {
-  console.log(req.user, "req.userrr");
-  console.log(req.user.role, "req.userrr.roleee");
+  // console.log(req.user, "req.userrr");
+  // console.log(req.user.role, "req.userrr.roleee");
   if (req.user && req.user.role === "admin") {
     next();
   } else {
@@ -20,8 +20,8 @@ const isAdmin = (req, res, next) => {
 };
 
 const isDoctor = (req, res, next) => {
-  console.log(req.user.role,'roleeeeeeeeeeee')
-  console.log(req.user,'req.userrrrrrrr')
+  // console.log(req.user.role,'roleeeeeeeeeeee')
+  // console.log(req.user,'req.userrrrrrrr')
   if (req.user && req.user.role === "doctor") {
     next();
   } else {

@@ -150,11 +150,12 @@ export const doctorProfilUpdateUseCase = async (doctorId, req) => {
     profilePicture,
     state,
     qualification,
+    certificate,
     department,
   };
-  if (req.file) {
-    updatedData.certificate = req.file.path; // path to the uploaded file
-  }
+  // if (req.file) {
+  //   updatedData.certificate = req.file.path; // path to the uploaded file
+  // }
   const updatedDoctor = await Doctor.findByIdAndUpdate(
     doctorId,
     { $set: updatedData },

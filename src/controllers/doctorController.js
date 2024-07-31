@@ -115,6 +115,7 @@ export const completePasswordReset = asyncHandler(async (req, res) => {
 export const updateDoctorProfile = asyncHandler(async (req, res) => {
   try {
     const doctorId = req.params.id;
+ 
     const updatedData = req.body;
     if (!updatedData) {
       return res.status(400).json({ message: "All fields are required" });
