@@ -120,46 +120,40 @@ export const completePasswordResetUseCase = async (
 };
 
 export const doctorProfilUpdateUseCase = async (doctorId, req) => {
-  const {
-    name,
-    email,
-    mobile,
-    profilePicture,
-    state,
-    qualification,
-    certificate,
-    department,
-  } = req.body;
+  const bodyData = req.body;
+  console.log(bodyData, "body dataaa");
+  if (!bodyData) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-  if (!name) {
-    return errorHandler(400, "name is required");
-  }
-  if (!mobile) {
-    return errorHandler(400, "mobile number is required");
-  }
-  if (!state) {
-    return errorHandler(400, "mobile number is required");
-  }
-  if (!qualification) {
-    return errorHandler(400, "qualification is required");
-  }
-  const updatedData = {
-    name,
-    email,
-    mobile,
-    profilePicture,
-    state,
-    qualification,
-    certificate,
-    department,
-  };
+  // const updatedData = {
+  //   name: req.body.name,
+  //   email: req.body.email,
+  //   mobile: req.body.mobile,
+  //   profilePicture: req.body.profilePicture,
+  //   state: req.body.state,
+  //   qualification: req.body.qualification,
+  //   certificate: req.body.certificate,
+  //   department: req.body.department,
+  // };
   // if (req.file) {
   //   updatedData.certificate = req.file.path; // path to the uploaded file
   // }
   const updatedDoctor = await Doctor.findByIdAndUpdate(
     doctorId,
-    { $set: updatedData },
-    { new: true, runValidators: true }
+    {
+      $set: {
+        name: req.body.name,
+        email: req.body.email,
+        mobile: req.body.mobile,
+        profilePicture: req.body.profilePicture,
+        state: req.body.state,
+        qualification: req.body.qualification,
+        certificate: req.body.certificate,
+        department: req.body.department,
+      },
+    },
+    { new: true }
   );
   return updatedDoctor;
 };

@@ -7,14 +7,14 @@ import { errorHandler } from "../utils/error.js";
 
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
-  console.log(token, "token");
+  // console.log(req.cookies.token, "token");
   if (req.cookies.token) {
     try {
       token = req.cookies.token;
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select("-password");
-
+      console.log(user);
       next();
     } catch (error) {
       return errorHandler(401, "Not authorized,token failed!!");
@@ -61,7 +61,7 @@ export const protectDoctor = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       // console.log(decoded, "decodeddddddd");
       // console.log(decoded.id, "decodeddddddd id");
-      
+
       req.user = await Doctor.findById(decoded.id).select("-password");
       // console.log(req.user, "doctorrr");
       if (!req.user) {

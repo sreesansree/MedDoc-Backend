@@ -81,6 +81,27 @@ export const completePasswordResetUseCase = async (
   await user.save();
 };
 
+export const UserProfilUpdateUseCase = async(userId,req)=>{
+  const bodyData = req.body;
+  console.log(bodyData, "body dataaa");
+  if (!bodyData) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  const updatedUser = await User.findByIdAndUpdate(
+    doctorId,
+    {
+      $set: {
+        name: req.body.name,
+        email: req.body.email,
+      
+      },
+    },
+    { new: true }
+  );
+  return updatedDoctor;
+
+}
+
 export default {
   registerUser,
   verifyOTP,

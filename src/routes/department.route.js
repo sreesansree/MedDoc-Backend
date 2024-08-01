@@ -11,8 +11,8 @@ import {
 const router = express.Router();
 
 router.get("/", getDepartments);
-router.post("/", addDepartment);
 router.get("/:id", getDeparmentById);
+router.post("/", addDepartment);
 router.put("/:id", updateDepartment);
 router.delete("/:id", deleteDepartment);
 

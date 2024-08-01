@@ -14,6 +14,10 @@ import { protectDoctor } from "../middleware/authMiddleware.js";
 // import multer from "multer";
 // const upload = multer({ dest: "uploads/" });
 import { upload } from "../middleware/multer.js";
+import {
+  createBookingSlot,
+  getDoctorsSlots,
+} from "../controllers/slotController.js";
 
 const router = express.Router();
 
@@ -32,5 +36,11 @@ router.put(
   upload.single("certificate"),
   updateDoctorProfile
 );
+
+// new booking slot
+router.post("/slots", protectDoctor, isDoctor, createBookingSlot);
+
+// get all booking slot for a doctor
+router.get("/slots/:doctorId", protectDoctor, isDoctor, getDoctorsSlots);
 
 export default router;
