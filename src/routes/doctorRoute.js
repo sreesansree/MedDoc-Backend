@@ -41,6 +41,6 @@ router.put(
 router.post("/slots", protectDoctor, isDoctor, createBookingSlot);
 
 // get all booking slot for a doctor
-router.get("/slots/:doctorId", protectDoctor, isDoctor, getDoctorsSlots);
+router.get("/slots/:id", protectDoctor, isDoctor, getDoctorsSlots);
 
 export default router;

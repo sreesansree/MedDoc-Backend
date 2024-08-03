@@ -1,12 +1,23 @@
+import mongoose from "mongoose";
 import BookingSlot from "../models/BookingSlotModel.js";
-
+import Doctor from "../models/DoctorModel.js";
 // create a new booking slot
+
 export const createBookingSlot = async (req, res) => {
-  const { doctor, date, startTime, endTime } = req.body;
+  const { doctorEmailOrName, date, startTime, endTime } = req.body;
 
   try {
+    // Find doctor by email or name
+    const doctor = await Doctor.findOne({
+      $or: [{ email: doctorEmailOrName }, { name: doctorEmailOrName }],
+    });
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
     // Check if the doctor already has five slots for the specified date
-    const existingSlots = await BookingSlot.find({ doctor, date });
+    const existingSlots = await BookingSlot.find({ doctor: doctor._id, date });
     if (existingSlots.length >= 5) {
       return res
         .status(400)
@@ -23,8 +34,9 @@ export const createBookingSlot = async (req, res) => {
         .json({ message: "There is a time overlap with an existing slot" });
     }
 
-    const newSlot = await new BookingSlot({
-      doctor,
+    // Create the new slot
+    const newSlot = new BookingSlot({
+      doctor: doctor._id,
       date,
       startTime,
       endTime,
@@ -39,9 +51,16 @@ export const createBookingSlot = async (req, res) => {
 
 //Get all booking slots for a doctor
 export const getDoctorsSlots = async (req, res) => {
-  const { doctorId } = req.params;
+  const { id } = req.params;
+  console.log(req.params);
+ 
+  console.log("Received doctor ID:", id);
 
   try {
+    // Ensure doctorId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid doctor ID" });
+    }
     const slots = await BookingSlot.find({ doctor: doctorId });
     res.status(200).json(slots);
   } catch (error) {

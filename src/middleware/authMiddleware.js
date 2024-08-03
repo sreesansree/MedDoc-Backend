@@ -11,10 +11,10 @@ export const protect = asyncHandler(async (req, res, next) => {
   if (req.cookies.token) {
     try {
       token = req.cookies.token;
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select("-password");
-      console.log(user);
+      console.log(req.user ,'req.user from middleware----------------------------');
       next();
     } catch (error) {
       return errorHandler(401, "Not authorized,token failed!!");

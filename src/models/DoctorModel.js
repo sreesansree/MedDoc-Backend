@@ -63,6 +63,21 @@ const doctorSchema = new mongoose.Schema({
     ref: "Department",
     required: false,
   },
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+  },
+  experience: {
+    type: Number,
+    required: false,
+  },
+  starRating: {
+    type: Number,
+    required: false,
+    min: 1,
+    max: 5,
+  },
 });
 
 const Doctor = mongoose.model("Doctor", doctorSchema);
