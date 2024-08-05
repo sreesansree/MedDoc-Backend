@@ -78,6 +78,18 @@ const doctorSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
+  rejectionReason: {
+    type: String,
+    required: false,
+  },
+  canReapply: {
+    type: Boolean,
+    default: true,
+  },
+  applicationAttempts: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Doctor = mongoose.model("Doctor", doctorSchema);

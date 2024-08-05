@@ -9,7 +9,13 @@ import { errorHandler } from "../utils/error.js";
 
 import otpService from "../service/otpService.js";
 
-export const registerDoctorUseCase = async (name, email, password) => {
+export const registerDoctorUseCase = async (
+  name,
+  email,
+  password,
+  certificate
+) => {
+  
   const existingDoctor = await Doctor.findOne({ email });
   if (existingDoctor) {
     throw new Error("Doctor already exists with this email.");
@@ -22,6 +28,7 @@ export const registerDoctorUseCase = async (name, email, password) => {
     name,
     email,
     password: hashedPassword,
+    certificate,
     otp,
     otpExpires: Date.now() + 3600000, // one hour
   });
@@ -39,8 +46,8 @@ export const verifyOtpUseCase = async (email, enteredOtp) => {
     !doctor ||
     !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
   ) {
-    // throw new Error("Invalid OTP or OTP has expired");
-    return errorHandler(400, "Invalid OTP or OTP has expired");
+    throw new Error("Invalid OTP or OTP has expired");
+    // return errorHandler(400, "Invalid OTP or OTP has expired");
   }
   doctor.is_blocked = false;
   doctor.isVerified = true;
@@ -63,6 +70,10 @@ export const loginDoctorUseCase = async (email, password) => {
   }
   if (!doctor.isVerified) {
     throw new Error("You have to verify your're account before login");
+    // return errorHandler(400, "You have to verify your're account before login");
+  }
+  if (!doctor.isApproved) {
+    throw new Error("Your account were not approved by admin yet.");
     // return errorHandler(400, "You have to verify your're account before login");
   }
   if (doctor.is_blocked) {

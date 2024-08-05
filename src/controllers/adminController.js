@@ -4,6 +4,7 @@ import { errorHandler } from "../utils/error.js";
 import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
 import Activity from "../models/ActivityModel.js";
+import sendEmail from "../utils/sendEmail.js";
 // Login admin
 
 export const loginAdmin = asyncHandler(async (req, res) => {
@@ -98,12 +99,59 @@ export const unblockUser = async (req, res) => {
 export const approveDoctor = async (req, res) => {
   const { id } = req.params;
   try {
-    await Doctor.findByIdAndUpdate(id, { isApproved: true });
-    res.status(200).json({ message: "Doctor approved successfully" });
+    const doctor = await Doctor.findById(id);
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found." });
+    }
+
+    doctor.isApproved = true;
+    doctor.status = "approved"; // Update status
+    await doctor.save();
+
+    // Send approval email
+    const subject = "MedDoc - Doctor Application Approved";
+    const message = `Dear ${doctor.name},\n\nCongratulations! Your application has been approved.\n\nBest regards,\nMedDoc Team`;
+    await sendEmail(doctor.email, subject, message);
+
+    res.status(200).json({ message: "Doctor approved successfully." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const rejectDoctor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { reason } = req.body;
+    if (!reason) {
+      return res.status(400).json({ message: "Reason is required." });
+    }
+
+    const doctor = await Doctor.findById(id);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found." });
+    }
+    doctor.status = "rejected";
+    doctor.rejectionReason = reason; // Add rejection reason
+    await doctor.save();
+
+    const subject = "MedDoc Doctor Application Status";
+    const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${reason}\n\nBest regards,\nMedDoc Team`;
+
+    // Send rejection email
+    await sendEmail(doctor.email, subject, message);
+    res.status(200).json({ message: "Doctor rejected successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// // Helper function to send rejection email
+// const sendRejectionEmail = async (email, reason) => {
+//   const subject = "MedDoc Doctor Application Status";
+//   const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${reason}\n\nBest regards,\nMedDoc Team`;
+//   await sendEmail(email, subject, message);
+// };
 
 // Block a doctor
 export const blockDoctor = async (req, res) => {

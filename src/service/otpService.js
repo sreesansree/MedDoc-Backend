@@ -5,7 +5,7 @@ const generateOTP = () => {
 };
 
 const sendOTP = async (email, otp) => {
-  const subject = "Your OTP Code";
+  const subject = "MedDoc Verification";
   const message = `Your OTP code is ${otp}. Please enter this code to verify your account.`;
 
   await sendEmail(email, subject, message);

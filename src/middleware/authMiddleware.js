@@ -27,12 +27,12 @@ export const protect = asyncHandler(async (req, res, next) => {
 
 export const protectAdmin = asyncHandler(async (req, res, next) => {
   let token;
-  // console.log(req.cookies.adminToken,'adminTokeen');
+  console.log(req.cookies.adminToken,'adminTokeen');
   if (req.cookies.adminToken) {
     try {
       token = req.cookies.adminToken;
       // console.log(token, "tokennnn");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
       // console.log(decoded, "decodeddddddd");
       // console.log(decoded.id, "decodeddddddd id");
 
@@ -58,7 +58,7 @@ export const protectDoctor = asyncHandler(async (req, res, next) => {
     try {
       token = req.cookies.doctorToken;
       // console.log(token, "tokennnn");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
       // console.log(decoded, "decodeddddddd");
       // console.log(decoded.id, "decodeddddddd id");
 

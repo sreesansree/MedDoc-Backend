@@ -21,7 +21,7 @@ import {
 
 const router = express.Router();
 
-router.post("/register", registerDoctor);
+router.post("/register", upload.single("certificate"), registerDoctor);
 router.post("/verify-otp", verifyOTP);
 router.post("/login", loginDoctor);
 router.post("/logout", logoutDoctor);

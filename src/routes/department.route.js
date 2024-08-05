@@ -7,6 +7,7 @@ import {
   updateDepartment,
   deleteDepartment,
 } from "../controllers/adminController.js";
+import { protectAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

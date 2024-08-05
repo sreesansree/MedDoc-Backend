@@ -12,6 +12,7 @@ import {
   unblockDoctor,
   recentActivity,
   getDoctor,
+  rejectDoctor,
 } from "../controllers/adminController.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
@@ -34,6 +35,8 @@ router.get("/activities", protectAdmin, recentActivity);
 router.get("/doctors", protectAdmin, getDoctors);
 router.get("/doctors/:id", protectAdmin, getDoctor);
 router.post("/approve-doctor/:id", protectAdmin, approveDoctor);
+router.post("/reject-doctor/:id", protectAdmin, rejectDoctor);
+
 router.post("/block-doctor/:id", protectAdmin, blockDoctor);
 router.post("/unblock-doctor/:id", protectAdmin, unblockDoctor);
 

@@ -13,9 +13,9 @@ import {
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
-    console.log(req.body, "req bodyyy");
     const { name, email, password } = req.body;
-    await registerDoctorUseCase(name, email, password);
+    const certificate = req.file ? req.file.path : null;
+    await registerDoctorUseCase(name, email, password, certificate);
     res.status(200).json({
       message: "Doctor register successfully , check your email for OTP",
     });
@@ -97,7 +97,6 @@ export const logoutDoctor = asyncHandler(async (req, res) => {
 
 export const initiatePasswordReset = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  // console.log(req.body, "req.bodyyyyyyyyyy");
   await initiatePasswordResetUseCase(email);
   res.status(200).json({
     message: "Password reset initiated. check your email for the link.",
@@ -106,7 +105,6 @@ export const initiatePasswordReset = asyncHandler(async (req, res) => {
 
 export const completePasswordReset = asyncHandler(async (req, res) => {
   const { email, otp, password } = req.body;
-  // console.log(req.body, "req.bodyyyyyyyyyyyyyyyyy");
   await completePasswordResetUseCase(email, otp, password);
   res.status(200).json({ message: "Password reset Successful." });
 });
@@ -127,6 +125,3 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-
-
