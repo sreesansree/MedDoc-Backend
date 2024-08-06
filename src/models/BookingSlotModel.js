@@ -11,6 +11,10 @@ const bookingSlotSchema = mongoose.Schema({
   //   ref: "User",
   //   required: true,
   // },
+  orderId: {
+    type: String,
+    required: false,
+  },
   date: {
     type: Date,
     required: true,

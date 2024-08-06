@@ -16,7 +16,10 @@ import {
   isUser,
   roleMiddleware,
 } from "../middleware/roleMiddleware.js";
-import { bookSlot } from "../controllers/slotController.js";
+import {
+  bookSlotWithPayment,
+  verifyPayment,
+} from "../controllers/slotController.js";
 
 const router = express.Router();
 
@@ -34,6 +37,9 @@ router.put("/update/:userId", protect, updateUser);
 // router.patch("/book-slot/:slotId", protect, authorize("user"), bookSlot);
 // router.patch("/slots/:id", protect, isUser, bookSlot);
 
-router.patch("/slots/:slotId", bookSlot);
+// Route to book a slot with payment
+router.post("/book-slot/:slotId", bookSlotWithPayment);
+// Route to verify payment
+router.post("/verify-payment", protect, verifyPayment);
 
 export default router;
