@@ -15,10 +15,17 @@ export const registerDoctorUseCase = async (
   password,
   certificate
 ) => {
-  
   const existingDoctor = await Doctor.findOne({ email });
+
   if (existingDoctor) {
-    throw new Error("Doctor already exists with this email.");
+    if (existingDoctor.status === "rejected" && existingDoctor.canReapply) {
+      // Reset previous application data
+      existingDoctor.status = "pending";
+      existingDoctor.rejectionReason = null;
+      existingDoctor.applicationAttempts = 0;
+    } else {
+      throw new Error("Doctor already exists with this email.");
+    }
   }
 
   const hashedPassword = await hashPassword(password);
@@ -162,6 +169,7 @@ export const doctorProfilUpdateUseCase = async (doctorId, req) => {
         qualification: req.body.qualification,
         certificate: req.body.certificate,
         department: req.body.department,
+        experience: req.body.experience,
       },
     },
     { new: true }

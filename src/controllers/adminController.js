@@ -123,8 +123,10 @@ export const approveDoctor = async (req, res) => {
 export const rejectDoctor = async (req, res) => {
   const { id } = req.params;
   try {
-    const { reason } = req.body;
-    if (!reason) {
+    const { rejectionReason } = req.body;
+    console.log(rejectionReason, "rejectionReason..........");
+    console.log(req.body, "body contenttttttt");
+    if (!rejectionReason) {
       return res.status(400).json({ message: "Reason is required." });
     }
 
@@ -133,11 +135,11 @@ export const rejectDoctor = async (req, res) => {
       return res.status(404).json({ message: "Doctor not found." });
     }
     doctor.status = "rejected";
-    doctor.rejectionReason = reason; // Add rejection reason
+    doctor.rejectionReason = rejectionReason; // Add rejection rejectionReason
     await doctor.save();
 
     const subject = "MedDoc Doctor Application Status";
-    const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${reason}\n\nBest regards,\nMedDoc Team`;
+    const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${rejectionReason}\n\nBest regards,\nMedDoc Team`;
 
     // Send rejection email
     await sendEmail(doctor.email, subject, message);
@@ -147,9 +149,9 @@ export const rejectDoctor = async (req, res) => {
   }
 };
 // // Helper function to send rejection email
-// const sendRejectionEmail = async (email, reason) => {
+// const sendRejectionEmail = async (email, rejectionReason) => {
 //   const subject = "MedDoc Doctor Application Status";
-//   const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${reason}\n\nBest regards,\nMedDoc Team`;
+//   const message = `Dear Doctor,\n\nWe regret to inform you that your application has been rejected. Reason: ${rejectionReason}\n\nBest regards,\nMedDoc Team`;
 //   await sendEmail(email, subject, message);
 // };
 

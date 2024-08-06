@@ -6,6 +6,11 @@ const bookingSlotSchema = mongoose.Schema({
     ref: "Doctor",
     required: true,
   },
+  // user: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "User",
+  //   required: true,
+  // },
   date: {
     type: Date,
     required: true,
@@ -21,6 +26,10 @@ const bookingSlotSchema = mongoose.Schema({
   isBooked: {
     type: Boolean,
     default: false,
+  },
+  price: {
+    type: Number,
+    required: true, // Add this field to represent slot price
   },
 });
 

@@ -4,7 +4,7 @@ import Doctor from "../models/DoctorModel.js";
 // create a new booking slot
 
 export const createBookingSlot = async (req, res) => {
-  const { doctorEmailOrName, date, startTime, endTime } = req.body;
+  const { doctorEmailOrName, date, startTime, endTime, price } = req.body;
 
   try {
     // Find doctor by email or name
@@ -40,6 +40,7 @@ export const createBookingSlot = async (req, res) => {
       date,
       startTime,
       endTime,
+      price
     });
 
     await newSlot.save();
@@ -53,7 +54,7 @@ export const createBookingSlot = async (req, res) => {
 export const getDoctorsSlots = async (req, res) => {
   const { id } = req.params;
   console.log(req.params);
- 
+
   console.log("Received doctor ID:", id);
 
   try {
@@ -61,7 +62,7 @@ export const getDoctorsSlots = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid doctor ID" });
     }
-    const slots = await BookingSlot.find({ doctor: doctorId });
+    const slots = await BookingSlot.find({ doctor: id });
     res.status(200).json(slots);
   } catch (error) {
     res.status(500).json({ message: error.message });
