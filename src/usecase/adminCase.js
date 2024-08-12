@@ -47,7 +47,6 @@ const loginAdmin = async (email, password) => {
 
 // Add a new department
 const addDepartmentUseCase = async ({ name, description }) => {
-  
   const newDepartment = new Department({ name, description });
   await newDepartment.save();
   return newDepartment;
@@ -69,7 +68,6 @@ const getDepartmentByIdUseCase = async (id) => {
 
 // Update a department by ID
 const updateDepartmentUseCase = async (id, updateData) => {
- 
   const department = await Department.findByIdAndUpdate(id, updateData, {
     new: true,
   });
@@ -87,7 +85,7 @@ const deleteDepartmentUseCase = async (id) => {
 
 // Get Doctor
 const getDoctorById = async (id) => {
-  return await Doctor.findById(id);
+  return await Doctor.findById(id).populate("department");
 };
 
 // Approve Doctor

@@ -13,8 +13,8 @@ import {
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const certificate = req.file ? req.file.path : null;
+    const { name, email, password,certificate } = req.body;
+    // const certificate = req.file ? req.file.path : null;
     await registerDoctorUseCase(name, email, password, certificate);
     res.status(200).json({
       message: "Doctor register successfully , check your email for OTP",

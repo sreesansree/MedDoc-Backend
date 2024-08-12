@@ -95,7 +95,7 @@ export const loginDoctorUseCase = async (email, password) => {
   const doctorToken = generateToken({ id: doctor._id, role: "doctor" });
 
   return {
-    id: doctor._id,
+    _id: doctor._id,
     name: doctor.name,
     email: doctor.email,
     doctorToken: doctorToken,

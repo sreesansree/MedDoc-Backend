@@ -62,6 +62,7 @@ export const createBookingSlot = async (req, res) => {
 //Get all booking slots for a doctor
 export const getDoctorsSlots = async (req, res) => {
   const { id } = req.params;
+  // const { doctorId } = req.params;
   console.log(req.params);
 
   console.log("Received doctor ID:", id);
@@ -72,6 +73,7 @@ export const getDoctorsSlots = async (req, res) => {
       return res.status(400).json({ message: "Invalid doctor ID" });
     }
     const slots = await BookingSlot.find({ doctor: id });
+    console.log(slots)
     res.status(200).json(slots);
   } catch (error) {
     res.status(500).json({ message: error.message });
