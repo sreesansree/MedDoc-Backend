@@ -4,58 +4,106 @@ import Doctor from "../models/DoctorModel.js";
 // create a new booking slot
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const razorpay = new Razorpay({
   key_id: process.env.RazorpayId,
   key_secret: process.env.RazorpayKeySecret,
 });
 
+const parseTime = (time) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
 export const createBookingSlot = async (req, res) => {
-  const { doctorEmailOrName, date, startTime, endTime, price } = req.body;
+  const { date, startTime, endTime, price, fixedSlot } = req.body;
+  const token = req.cookies.doctorToken;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   try {
-    // Find doctor by email or name
-    const doctor = await Doctor.findOne({
-      $or: [{ email: doctorEmailOrName }, { name: doctorEmailOrName }],
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const doctorId = decoded.id;
+
+    const slotDate = new Date(date);
+    if (isNaN(slotDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (slotDate < today) {
+      return res
+        .status(400)
+        .json({ message: "Cannot create slots for past dates" });
+    }
+
+    if (parseTime(startTime) >= parseTime(endTime)) {
+      return res
+        .status(400)
+        .json({ message: "Start time must be before end time" });
+    }
+
+    const existingSlots = await BookingSlot.find({
+      date: slotDate,
+      doctor: doctorId,
     });
 
-    if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
+    if (fixedSlot) {
+      const predefinedFixedSlots = [
+        { startTime: "09:00", endTime: "10:00" },
+        { startTime: "10:00", endTime: "11:00" },
+        { startTime: "11:00", endTime: "12:00" },
+        { startTime: "13:00", endTime: "14:00" },
+        { startTime: "14:00", endTime: "15:00" },
+        // Add more fixed slots as needed
+      ];
+
+      const slotExists = predefinedFixedSlots.some(
+        (slot) => startTime === slot.startTime && endTime === slot.endTime
+      );
+
+      if (!slotExists) {
+        return res.status(400).json({ message: "Fixed slot not available" });
+      }
+    } else {
+      if (existingSlots.length >= 8) {
+        return res.status(400).json({
+          message: "Cannot create more than eight slots for this date",
+        });
+      }
+
+      const overlappingSlot = existingSlots.find(
+        (slot) =>
+          parseTime(startTime) < parseTime(slot.endTime) &&
+          parseTime(endTime) > parseTime(slot.startTime)
+      );
+
+      if (overlappingSlot) {
+        return res
+          .status(400)
+          .json({ message: "Time overlap with an existing slot" });
+      }
     }
 
-    // Check if the doctor already has five slots for the specified date
-    const existingSlots = await BookingSlot.find({ doctor: doctor._id, date });
-    if (existingSlots.length >= 5) {
-      return res
-        .status(400)
-        .json({ message: "Doctor already has five slots for this date" });
-    }
-
-    // Check if there is any overlap with existing slots
-    const overlappingSlot = existingSlots.find(
-      (slot) => startTime < slot.endTime && endTime > slot.startTime
-    );
-    if (overlappingSlot) {
-      return res
-        .status(400)
-        .json({ message: "There is a time overlap with an existing slot" });
-    }
-
-    // Create the new slot
     const newSlot = new BookingSlot({
-      doctor: doctor._id,
-      date: new Date(date), // Ensure date is properly formatted
-      startTime,
-      endTime,
+      date: slotDate,
+      startTime: startTime,
+      endTime: endTime,
       isBooked: false,
       price,
+      doctor: doctorId,
     });
-    // Save the slot to the database
-    const savedSlot = await newSlot.save();
 
-    res.status(201).json(savedSlot);
+    await newSlot.save();
+    res.status(201).json(newSlot);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error creating slot:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
 
@@ -73,7 +121,7 @@ export const getDoctorsSlots = async (req, res) => {
       return res.status(400).json({ message: "Invalid doctor ID" });
     }
     const slots = await BookingSlot.find({ doctor: id });
-    console.log(slots)
+    console.log(slots);
     res.status(200).json(slots);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -84,10 +132,10 @@ export const getDoctorsSlots = async (req, res) => {
 
 export const bookSlotWithPayment = async (req, res) => {
   const { slotId } = req.params;
-  console.log(slotId, "slotIddddddddddddddddddd");
+  // console.log(slotId, "slotIddddddddddddddddddd");
   try {
     const slot = await BookingSlot.findById(slotId);
-    console.log(slot, "found slotttttttttttttttttttttt");
+    // console.log(slot, "found slotttttttttttttttttttttt");
     if (!slot) {
       return res.status(404).json({ message: "Slot not found" });
     }
@@ -140,5 +188,92 @@ export const verifyPayment = async (req, res) => {
   } else {
     console.log("Slot booking Failedddddddddddddd");
     res.status(400).json({ message: "Invalid signature" });
+  }
+};
+
+// Update a booking slot
+export const updateBookingSlot = async (req, res) => {
+  const { slotId } = req.params;
+  const { date, startTime, endTime, price, fixedSlot } = req.body;
+  const token = req.cookies.doctorToken;
+
+  try {
+    const slot = await BookingSlot.findById(slotId);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const doctorId = decoded.id;
+
+    if (!slot) {
+      return res.status(404).json({ message: "Slot not found" });
+    }
+
+    if (slot.isBooked) {
+      return res.status(400).json({ message: "Cannot update a booked slot" });
+    }
+
+    // Ensure date is properly formatted
+    const slotDate = new Date(date);
+    if (isNaN(slotDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    // Check if the slot time is valid
+    if (startTime >= endTime) {
+      return res.status(400).json({ message: "Start time must be before end time" });
+    }
+
+    // Fetch existing slots for validation
+    const existingSlots = await BookingSlot.find({
+      date: slotDate,
+      doctor: doctorId,
+    });
+    // const existingSlots = await BookingSlot.find({
+    //   date: slotDate,
+    //   doctor: doctorId,
+    // });
+
+    const overlappingSlot = existingSlots.find(
+      (existingSlot) =>
+        existingSlot._id.toString() !== slotId &&
+        startTime < existingSlot.endTime &&
+        endTime > existingSlot.startTime
+    );
+
+    if (overlappingSlot) {
+      return res.status(400).json({ message: "Time overlap with an existing slot" });
+    }
+
+    // Update the slot details
+    slot.date = slotDate;
+    slot.startTime = startTime;
+    slot.endTime = endTime;
+    slot.price = price;
+    slot.fixedSlot = fixedSlot;
+
+    const updatedSlot = await slot.save();
+    res.status(200).json(updatedSlot);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// Delete a booking slot
+
+export const deleteBookingSlot = async (req, res) => {
+  const { slotId } = req.params;
+  try {
+    const slot = await BookingSlot.findById(slotId);
+    if (!slot) {
+      return res.status(404).json({ message: "Slot not found" });
+    }
+    if (slot.isBooked) {
+      return res.status(400).json({ message: "Cannot delete a booked slot" });
+    }
+
+    // Delete the slot
+    await BookingSlot.deleteOne({ _id: slotId });
+    res.status(200).json({ message: "Slot deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

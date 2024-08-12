@@ -111,9 +111,9 @@ export const logoutUser = async (req, res) => {
   // });
 };
 
-export const doctorsList =asyncHandler( async (req, res) => {
+export const doctorsList = asyncHandler(async (req, res) => {
   try {
-    const doctors = await Doctor.find({}).populate('department');
+    const doctors = await Doctor.find({}).populate("department");
     // console.log("Doctors fetched:", doctors); // Debugging log
 
     res.status(200).json(doctors);
@@ -153,9 +153,7 @@ export const completePasswordReset = asyncHandler(async (req, res) => {
 //   }
 // });
 
-
 export const updateUser = async (req, res, next) => {
-  
   if (req.body.password) {
     if (req.body.password.length < 6) {
       return next(errorHandler(400, "Password must be at least 6 characters"));
@@ -170,7 +168,9 @@ export const updateUser = async (req, res, next) => {
       );
     }
     if (req.body.username.trim().length === 0) {
-      return next(errorHandler(400, "Username cannot be empty or contain only spaces"));
+      return next(
+        errorHandler(400, "Username cannot be empty or contain only spaces")
+      );
     }
     if (req.body.username !== req.body.username.toLowerCase()) {
       return next(errorHandler(400, "Username must be lowercase"));
@@ -179,8 +179,8 @@ export const updateUser = async (req, res, next) => {
       return next(
         errorHandler(400, "Username can only contain letters and numbers")
       );
+    }
   }
-}
   try {
     const updateUser = await User.findByIdAndUpdate(
       req.params.userId,
@@ -198,5 +198,18 @@ export const updateUser = async (req, res, next) => {
     res.status(200).json(rest);
   } catch (error) {
     next(error);
+  }
+};
+
+export const getDoctor = async (req, res) => {
+  try {
+    const doctor = await userUseCase.getDoctorById(req.params.id);
+    console.log(doctor, "Single Doctor Fetched");
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    return res.status(200).json(doctor);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

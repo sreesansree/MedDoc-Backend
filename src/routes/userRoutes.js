@@ -9,6 +9,7 @@ import {
   initiatePasswordReset,
   completePasswordReset,
   updateUser,
+  getDoctor,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -36,6 +37,9 @@ router.put("/update/:userId", protect, updateUser);
 // Book a Slot
 // router.patch("/book-slot/:slotId", protect, authorize("user"), bookSlot);
 // router.patch("/slots/:id", protect, isUser, bookSlot);
+
+//Get single Doctor
+router.get("/doctor/:id", protect, getDoctor);
 
 // Route to book a slot with payment
 router.post("/book-slot/:slotId", bookSlotWithPayment);

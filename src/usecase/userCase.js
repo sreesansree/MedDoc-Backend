@@ -4,6 +4,7 @@ import otpService from "../service/otpService.js";
 import authService from "../service/authService.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/authUtils.js";
+import Doctor from "../models/DoctorModel.js";
 
 const registerUser = async ({ name, email, mobile, password }) => {
   const userExists = await User.findOne({ email });
@@ -73,7 +74,7 @@ export const completePasswordResetUseCase = async (
     throw new Error("Invalid OTP or OTP has Expired");
   }
   // console.log('Hashing password:', newPassword);
-  user.password = await hashPassword(newPassword,)
+  user.password = await hashPassword(newPassword);
   // console.log(user.password);
   user.otp = undefined;
   user.otpExpires = undefined;
@@ -81,30 +82,32 @@ export const completePasswordResetUseCase = async (
   await user.save();
 };
 
-export const UserProfilUpdateUseCase = async(userId,req)=>{
+export const UserProfilUpdateUseCase = async (userId, req) => {
   const bodyData = req.body;
   console.log(bodyData, "body dataaa");
   if (!bodyData) {
     return res.status(400).json({ message: "All fields are required" });
   }
   const updatedUser = await User.findByIdAndUpdate(
-    doctorId,
+    userId,
     {
       $set: {
         name: req.body.name,
         email: req.body.email,
-      
       },
     },
     { new: true }
   );
-  return updatedDoctor;
-
-}
+  return updatedUser;
+};
+const getDoctorById = async (id) => {
+  return await Doctor.findById(id).populate("department");
+};
 
 export default {
   registerUser,
   verifyOTP,
   loginUser,
   // google,
+  getDoctorById
 };

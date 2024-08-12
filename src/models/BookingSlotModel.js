@@ -12,7 +12,7 @@ const bookingSlotSchema = mongoose.Schema({
   //   required: true,
   // },
   orderId: {
-    type: String,
+    type: String, 
     required: false,
   },
   date: {
