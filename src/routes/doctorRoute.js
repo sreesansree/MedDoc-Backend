@@ -26,7 +26,7 @@ const router = express.Router();
 router.post("/register", upload.single("certificate"), registerDoctor);
 router.post("/verify-otp", verifyOTP);
 router.post("/login", loginDoctor);
-router.post("/logout", logoutDoctor);
+router.post("/logout",protectDoctor, logoutDoctor);
 router.post("/google", google);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);

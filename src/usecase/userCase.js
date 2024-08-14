@@ -5,6 +5,7 @@ import authService from "../service/authService.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/authUtils.js";
 import Doctor from "../models/DoctorModel.js";
+import bookingSlot from "../models/BookingSlotModel.js";
 
 const registerUser = async ({ name, email, mobile, password }) => {
   const userExists = await User.findOne({ email });
@@ -46,7 +47,8 @@ const verifyOTP = async ({ email, otp }) => {
 
 const loginUser = async ({ email, password }) => {
   const user = await authService.authenticateUser(email, password);
-  const token = authService.generateToken(user);
+  const token = user.token;
+  console.log(token);
   return { user, token };
 };
 
@@ -104,10 +106,23 @@ const getDoctorById = async (id) => {
   return await Doctor.findById(id).populate("department");
 };
 
+const getAppointmentsByUserId = async (userId) => {
+  try {
+    // const appointments = await bookingSlot
+    //   .find({ user: userId })
+    //   .populate("doctor");
+    // return appointments;
+    return await bookingSlot.find({user:userId,isBooked: true}).populate("doctor");
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
+};
+
 export default {
   registerUser,
   verifyOTP,
   loginUser,
   // google,
-  getDoctorById
+  getDoctorById,
+  getAppointmentsByUserId,
 };

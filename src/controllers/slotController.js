@@ -55,7 +55,7 @@ export const createBookingSlot = async (req, res) => {
     // If the slot is a fixed slot, check against predefined fixed slots
     if (fixedSlot) {
       const predefinedFixedSlots = [
-        { startTime: "09:00", endTime: "9:30" },
+        { startTime: "09:00", endTime: "09:30" },
         { startTime: "10:00", endTime: "10:30" },
         { startTime: "11:00", endTime: "11:30" },
         { startTime: "13:00", endTime: "13:30" },
@@ -190,7 +190,9 @@ export const verifyPayment = async (req, res) => {
       return res.status(404).json({ message: "Slot not found" });
     }
     slot.isBooked = true;
+    slot.user = req.user.id
     await slot.save();
+    console.log(slot," : =====> slot booked")
     res.status(200).json({ message: "Payment successful and slot booked" });
   } else {
     res.status(400).json({ message: "Invalid signature" });

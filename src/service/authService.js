@@ -51,10 +51,11 @@ const authenticateUser = async (email, password) => {
       throw new Error("Your account got blocked by the admin");
     }
     return {
-      id: user._id,
+      _id: user._id,
       email: user.email,
       name: user.name,
       role: user.role,
+      token: generateToken(user),
     };
   } else {
     throw new Error("Invalid email or password");

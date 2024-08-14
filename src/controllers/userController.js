@@ -34,26 +34,14 @@ export const loginUser = async (req, res) => {
     res.cookie("token", response.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
     res.status(200).json(response.user);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
-// export const google = async (req, res, next) => {
-//   try {
-//     const { email, name, googlePhotoUrl } = req.body;
-//     const response = await userUseCase.google({ email, name, googlePhotoUrl });
-//     res.cookie("token", response.token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       maxAge: 5 * 60 * 60 * 1000, // 5 hours
-//     }).status(200).json(response);
-//   } catch (error) {
-//     console.error("Error in Google OAuth controller:", error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+
 export const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
@@ -211,5 +199,19 @@ export const getDoctor = async (req, res) => {
     return res.status(200).json(doctor);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// get user-appointments
+export const getUserAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log(userId, " :   User Id");
+    const appointments = await userUseCase.getAppointmentsByUserId(userId);
+    console.log(appointments, " : Appointmentsss");
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

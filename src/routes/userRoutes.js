@@ -10,6 +10,7 @@ import {
   completePasswordReset,
   updateUser,
   getDoctor,
+  getUserAppointments,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -45,5 +46,7 @@ router.get("/doctor/:id", protect, getDoctor);
 router.post("/book-slot/:slotId", bookSlotWithPayment);
 // Route to verify payment
 router.post("/verify-payment", protect, verifyPayment);
+// Route to Get Appointments
+router.get("/user-appointments", protect,getUserAppointments);
 
 export default router;
