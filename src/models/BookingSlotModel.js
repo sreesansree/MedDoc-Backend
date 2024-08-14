@@ -6,13 +6,13 @@ const bookingSlotSchema = mongoose.Schema({
     ref: "Doctor",
     required: true,
   },
-  // user: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "User",
-  //   required: true,
-  // },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false, // Optional for booking
+  },
   orderId: {
-    type: String, 
+    type: String,
     required: false,
   },
   date: {
@@ -34,6 +34,10 @@ const bookingSlotSchema = mongoose.Schema({
   price: {
     type: Number,
     required: true, // Add this field to represent slot price
+  },
+  fixedSlot: {
+    type: Boolean,
+    default: false, // If you want to differentiate fixed slots
   },
 });
 

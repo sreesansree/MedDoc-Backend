@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 import BookingSlot from "../models/BookingSlotModel.js";
-import Doctor from "../models/DoctorModel.js";
-// create a new booking slot
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -48,19 +46,20 @@ export const createBookingSlot = async (req, res) => {
         .json({ message: "Start time must be before end time" });
     }
 
+    // Fetch existing slots for the same doctor and date
     const existingSlots = await BookingSlot.find({
       date: slotDate,
       doctor: doctorId,
     });
 
+    // If the slot is a fixed slot, check against predefined fixed slots
     if (fixedSlot) {
       const predefinedFixedSlots = [
-        { startTime: "09:00", endTime: "10:00" },
-        { startTime: "10:00", endTime: "11:00" },
-        { startTime: "11:00", endTime: "12:00" },
-        { startTime: "13:00", endTime: "14:00" },
-        { startTime: "14:00", endTime: "15:00" },
-        // Add more fixed slots as needed
+        { startTime: "09:00", endTime: "9:30" },
+        { startTime: "10:00", endTime: "10:30" },
+        { startTime: "11:00", endTime: "11:30" },
+        { startTime: "13:00", endTime: "13:30" },
+        { startTime: "14:00", endTime: "13:30" },
       ];
 
       const slotExists = predefinedFixedSlots.some(
@@ -70,13 +69,28 @@ export const createBookingSlot = async (req, res) => {
       if (!slotExists) {
         return res.status(400).json({ message: "Fixed slot not available" });
       }
+
+      // Check if the fixed slot overlaps with any existing slot
+      const overlappingSlot = existingSlots.find(
+        (slot) =>
+          parseTime(startTime) < parseTime(slot.endTime) &&
+          parseTime(endTime) > parseTime(slot.startTime)
+      );
+
+      if (overlappingSlot) {
+        return res
+          .status(400)
+          .json({ message: "Time overlap with an existing slot" });
+      }
     } else {
+      // For non-fixed slots, check if there are already 8 slots
       if (existingSlots.length >= 8) {
         return res.status(400).json({
           message: "Cannot create more than eight slots for this date",
         });
       }
 
+      // Check for time overlap with existing slots
       const overlappingSlot = existingSlots.find(
         (slot) =>
           parseTime(startTime) < parseTime(slot.endTime) &&
@@ -90,6 +104,7 @@ export const createBookingSlot = async (req, res) => {
       }
     }
 
+    // Create the new slot
     const newSlot = new BookingSlot({
       date: slotDate,
       startTime: startTime,
@@ -97,6 +112,7 @@ export const createBookingSlot = async (req, res) => {
       isBooked: false,
       price,
       doctor: doctorId,
+      fixedSlot,
     });
 
     await newSlot.save();
@@ -107,35 +123,30 @@ export const createBookingSlot = async (req, res) => {
   }
 };
 
-//Get all booking slots for a doctor
 export const getDoctorsSlots = async (req, res) => {
   const { id } = req.params;
-  // const { doctorId } = req.params;
-  console.log(req.params);
-
-  console.log("Received doctor ID:", id);
 
   try {
-    // Ensure doctorId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid doctor ID" });
     }
-    const slots = await BookingSlot.find({ doctor: id });
-    console.log(slots);
+
+    const slots = await BookingSlot.find({
+      doctor: id,
+    });
+
     res.status(200).json(slots);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching slots:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
 
-// Book a slot
-
 export const bookSlotWithPayment = async (req, res) => {
   const { slotId } = req.params;
-  // console.log(slotId, "slotIddddddddddddddddddd");
+
   try {
     const slot = await BookingSlot.findById(slotId);
-    // console.log(slot, "found slotttttttttttttttttttttt");
     if (!slot) {
       return res.status(404).json({ message: "Slot not found" });
     }
@@ -143,15 +154,14 @@ export const bookSlotWithPayment = async (req, res) => {
       return res.status(400).json({ message: "Slot is already booked" });
     }
 
-    // Create a Razorpay order
     const order = await razorpay.orders.create({
-      amount: slot.price * 100, // Amount in paise
+      amount: slot.price * 100,
       currency: "INR",
       receipt: `receipt_order_${slotId}`,
       payment_capture: 1,
     });
-    console.log(order, "ORdereeeeeeeeee");
-    slot.orderId = order.id; // Adjust according to your schema
+
+    slot.orderId = order.id;
     await slot.save();
 
     res.status(200).json({
@@ -161,13 +171,13 @@ export const bookSlotWithPayment = async (req, res) => {
       key_id: process.env.RazorpayId,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error creating Razorpay order:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
 
 export const verifyPayment = async (req, res) => {
   const { orderId, paymentId, signature } = req.body;
-  console.log(req.body, " From Verify payment");
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RazorpayKeySecret)
     .update(`${orderId}|${paymentId}`)
@@ -176,32 +186,27 @@ export const verifyPayment = async (req, res) => {
   if (generatedSignature === signature) {
     const slot = await BookingSlot.findOne({ orderId });
 
-    console.log(slot, "slot");
-    console.log(orderId, "orderId");
     if (!slot) {
       return res.status(404).json({ message: "Slot not found" });
     }
     slot.isBooked = true;
     await slot.save();
-    console.log("Slot booking sucesssssss");
     res.status(200).json({ message: "Payment successful and slot booked" });
   } else {
-    console.log("Slot booking Failedddddddddddddd");
     res.status(400).json({ message: "Invalid signature" });
   }
 };
 
-// Update a booking slot
 export const updateBookingSlot = async (req, res) => {
   const { slotId } = req.params;
   const { date, startTime, endTime, price, fixedSlot } = req.body;
   const token = req.cookies.doctorToken;
 
   try {
-    const slot = await BookingSlot.findById(slotId);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const doctorId = decoded.id;
 
+    const slot = await BookingSlot.findById(slotId);
     if (!slot) {
       return res.status(404).json({ message: "Slot not found" });
     }
@@ -210,26 +215,21 @@ export const updateBookingSlot = async (req, res) => {
       return res.status(400).json({ message: "Cannot update a booked slot" });
     }
 
-    // Ensure date is properly formatted
     const slotDate = new Date(date);
     if (isNaN(slotDate.getTime())) {
       return res.status(400).json({ message: "Invalid date format" });
     }
 
-    // Check if the slot time is valid
     if (startTime >= endTime) {
-      return res.status(400).json({ message: "Start time must be before end time" });
+      return res
+        .status(400)
+        .json({ message: "Start time must be before end time" });
     }
 
-    // Fetch existing slots for validation
     const existingSlots = await BookingSlot.find({
       date: slotDate,
       doctor: doctorId,
     });
-    // const existingSlots = await BookingSlot.find({
-    //   date: slotDate,
-    //   doctor: doctorId,
-    // });
 
     const overlappingSlot = existingSlots.find(
       (existingSlot) =>
@@ -239,10 +239,11 @@ export const updateBookingSlot = async (req, res) => {
     );
 
     if (overlappingSlot) {
-      return res.status(400).json({ message: "Time overlap with an existing slot" });
+      return res
+        .status(400)
+        .json({ message: "Time overlap with an existing slot" });
     }
 
-    // Update the slot details
     slot.date = slotDate;
     slot.startTime = startTime;
     slot.endTime = endTime;
@@ -252,15 +253,14 @@ export const updateBookingSlot = async (req, res) => {
     const updatedSlot = await slot.save();
     res.status(200).json(updatedSlot);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error updating slot:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
 
-
-// Delete a booking slot
-
 export const deleteBookingSlot = async (req, res) => {
   const { slotId } = req.params;
+
   try {
     const slot = await BookingSlot.findById(slotId);
     if (!slot) {
@@ -270,10 +270,10 @@ export const deleteBookingSlot = async (req, res) => {
       return res.status(400).json({ message: "Cannot delete a booked slot" });
     }
 
-    // Delete the slot
     await BookingSlot.deleteOne({ _id: slotId });
     res.status(200).json({ message: "Slot deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error deleting slot:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };

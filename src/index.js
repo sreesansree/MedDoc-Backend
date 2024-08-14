@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
 import doctorRoutes from "./routes/doctorRoute.js";
+import { Server } from "socket.io";
 
 dotenv.config();
 connectDB();
@@ -30,11 +31,25 @@ app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes); 
+app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
 
-app.listen(PORT, () => {
+ const server = app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);
+});
+
+const io = new Server(server);
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("send_message", (message) => {
+    io.emit("receive_message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
 });
 
 app.use((err, req, res, next) => {
