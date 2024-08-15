@@ -8,6 +8,7 @@ import {
   initiatePasswordReset,
   completePasswordReset,
   updateDoctorProfile,
+  getDoctorAppointments,
 } from "../controllers/doctorController.js";
 import { isDoctor } from "../middleware/roleMiddleware.js";
 import { protectDoctor } from "../middleware/authMiddleware.js";
@@ -47,4 +48,8 @@ router.get("/slots/:id", protectDoctor, isDoctor, getDoctorsSlots);
 router.put("/slots/:slotId", protectDoctor, isDoctor, updateBookingSlot);
 // Delete Slot
 router.delete("/slots/:slotId", protectDoctor, isDoctor, deleteBookingSlot);
+// Get Doctor Appointments
+router.get("/doctor-appointments",protectDoctor,getDoctorAppointments)
+
+
 export default router;

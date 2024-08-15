@@ -206,9 +206,9 @@ export const getDoctor = async (req, res) => {
 export const getUserAppointments = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId, " :   User Id");
+    // console.log(userId, " :   User Id");
     const appointments = await userUseCase.getAppointmentsByUserId(userId);
-    console.log(appointments, " : Appointmentsss");
+    // console.log(appointments, " : Appointmentsss");
     res.status(200).json(appointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);

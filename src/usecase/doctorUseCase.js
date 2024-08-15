@@ -8,6 +8,7 @@ import {
 import { errorHandler } from "../utils/error.js";
 
 import otpService from "../service/otpService.js";
+import BookingSlot from "../models/BookingSlotModel.js";
 
 export const registerDoctorUseCase = async (
   name,
@@ -175,4 +176,12 @@ export const doctorProfilUpdateUseCase = async (doctorId, req) => {
     { new: true }
   );
   return updatedDoctor;
+};
+
+export const getAppointmentByDoctorID = async (doctorId) => {
+  try {
+    return await BookingSlot.find({ doctor: doctorId, isBooked: true }).populate("user");
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
 };

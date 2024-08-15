@@ -9,11 +9,12 @@ import {
   initiatePasswordResetUseCase,
   completePasswordResetUseCase,
   doctorProfilUpdateUseCase,
+  getAppointmentByDoctorID,
 } from "../usecase/doctorUseCase.js";
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
-    const { name, email, password,certificate } = req.body;
+    const { name, email, password, certificate } = req.body;
     // const certificate = req.file ? req.file.path : null;
     await registerDoctorUseCase(name, email, password, certificate);
     res.status(200).json({
@@ -125,3 +126,17 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Get doctor appointments
+export const getDoctorAppointments = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    console.log(doctorId, " : Doctor ID");
+    const appointments = await getAppointmentByDoctorID(doctorId);
+    console.log(appointments, ": Appointments of Doctor");
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
