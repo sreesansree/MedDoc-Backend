@@ -8,7 +8,8 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
 import doctorRoutes from "./routes/doctorRoute.js";
 import setupSocket from "./socket/socket.js";
-
+import chatRoutes from "./routes/chatRoutes.js";
+import messageRoutes from "./routes/messageRoute.js";
 
 dotenv.config();
 connectDB();
@@ -34,6 +35,8 @@ app.use(cookieParser());
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/messages", messageRoutes);
 
 const server = app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);
