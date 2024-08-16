@@ -27,7 +27,7 @@ const router = express.Router();
 router.post("/register", upload.single("certificate"), registerDoctor);
 router.post("/verify-otp", verifyOTP);
 router.post("/login", loginDoctor);
-router.post("/logout",protectDoctor, logoutDoctor);
+router.post("/logout", protectDoctor, logoutDoctor);
 router.post("/google", google);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
@@ -40,6 +40,7 @@ router.put(
   updateDoctorProfile
 );
 
+
 // new booking slot
 router.post("/slots", protectDoctor, isDoctor, createBookingSlot);
 // get all booking slot for a doctor
@@ -49,7 +50,6 @@ router.put("/slots/:slotId", protectDoctor, isDoctor, updateBookingSlot);
 // Delete Slot
 router.delete("/slots/:slotId", protectDoctor, isDoctor, deleteBookingSlot);
 // Get Doctor Appointments
-router.get("/doctor-appointments",protectDoctor,getDoctorAppointments)
-
+router.get("/doctor-appointments", protectDoctor, getDoctorAppointments);
 
 export default router;

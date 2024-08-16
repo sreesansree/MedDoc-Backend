@@ -99,6 +99,16 @@ export const loginDoctorUseCase = async (email, password) => {
     _id: doctor._id,
     name: doctor.name,
     email: doctor.email,
+    profilePicture: doctor.profilePicture,
+    isApproved: doctor.isApproved,
+    mobile: doctor.mobile,
+    profilePicture: doctor.profilePicture,
+    state: doctor.state,
+    qualification: doctor.qualification,
+    certificate: doctor.certificate,
+    department: doctor.department,
+    experience: doctor.experience,
+    isVerified: doctor.isVerified,
     doctorToken: doctorToken,
   };
 };
@@ -180,7 +190,10 @@ export const doctorProfilUpdateUseCase = async (doctorId, req) => {
 
 export const getAppointmentByDoctorID = async (doctorId) => {
   try {
-    return await BookingSlot.find({ doctor: doctorId, isBooked: true }).populate("user");
+    return await BookingSlot.find({
+      doctor: doctorId,
+      isBooked: true,
+    }).populate("user");
   } catch (error) {
     throw new Error("Error fetching appointments: " + error.message);
   }

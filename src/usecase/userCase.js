@@ -49,6 +49,7 @@ const loginUser = async ({ email, password }) => {
   const user = await authService.authenticateUser(email, password);
   const token = user.token;
   console.log(token);
+  console.log(user,'user from login userCase')
   return { user, token };
 };
 

@@ -59,7 +59,9 @@ export const createBookingSlot = async (req, res) => {
         { startTime: "10:00", endTime: "10:30" },
         { startTime: "11:00", endTime: "11:30" },
         { startTime: "13:00", endTime: "13:30" },
-        { startTime: "14:00", endTime: "13:30" },
+        { startTime: "14:00", endTime: "14:30" },
+        { startTime: "15:00", endTime: "15:30" },
+        { startTime: "18:00", endTime: "18:30" },
       ];
 
       const slotExists = predefinedFixedSlots.some(

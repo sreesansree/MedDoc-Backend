@@ -36,6 +36,7 @@ export const loginUser = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
+    console.log(response.user, ": response userrrr from controller");
     res.status(200).json(response.user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -140,19 +141,22 @@ export const completePasswordReset = asyncHandler(async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
-
 export const updateUser = async (req, res, next) => {
   if (req.body.password) {
     if (req.body.password.length < 6) {
       return next(errorHandler(400, "Password must be at least 6 characters"));
     }
-    req.body.password = bcrypt.hash(req.body.password, 10);
+    try {
+      req.body.password = await bcrypt.hash(req.body.password, 10);
+    } catch (error) {
+      return next(errorHandler(500, "Error hashing password"));
+    }
   }
 
   if (req.body.username) {
     if (req.body.username.length < 7 || req.body.username > 20) {
       return next(
-        errorHandler(400, "Username must be between 7 and 20 charactes")
+        errorHandler(400, "Username must be between 7 and 20 characters")
       );
     }
     if (req.body.username.trim().length === 0) {
@@ -169,6 +173,7 @@ export const updateUser = async (req, res, next) => {
       );
     }
   }
+
   try {
     const updateUser = await User.findByIdAndUpdate(
       req.params.userId,

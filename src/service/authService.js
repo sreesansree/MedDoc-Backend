@@ -54,6 +54,7 @@ const authenticateUser = async (email, password) => {
       _id: user._id,
       email: user.email,
       name: user.name,
+      profilePicture: user.profilePicture,
       role: user.role,
       token: generateToken(user),
     };
@@ -71,6 +72,7 @@ const authenticateAdmin = async (email, password) => {
       id: admin._id,
       email: admin.email,
       name: admin.name,
+      profilePicture: admin.profilePicture,
       role: admin.role,
       adminToken: generateToken(admin),
     };
@@ -86,6 +88,7 @@ const authenticateDoctor = async (email, password) => {
       id: doctor._id,
       email: doctor.email,
       name: doctor.name,
+      profilePicture: doctor.profilePicture,
       role: doctor.role,
       doctorToken: generateToken(doctor),
     };

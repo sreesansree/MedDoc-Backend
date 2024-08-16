@@ -22,10 +22,6 @@ export const protect = asyncHandler(async (req, res, next) => {
       }
       console.log(req.user, "==========> req.user");
 
-      console.log(
-        req.user,
-        "req.user from middleware----------------------------"
-      );
       next();
     } catch (error) {
       return errorHandler(401, "Not authorized,token failed!!");
