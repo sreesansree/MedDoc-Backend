@@ -11,6 +11,7 @@ import {
   updateUser,
   getDoctor,
   getUserAppointments,
+  getUser,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -30,6 +31,9 @@ router.post("/verify-otp", verifyOTP);
 router.post("/login", loginUser);
 router.post("/logout", protect, isUser, logoutUser);
 router.post("/google", google);
+
+router.get("/:id", getUser);
+
 router.get("/doctors-list", protect, doctorsList);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
@@ -47,6 +51,6 @@ router.post("/book-slot/:slotId", bookSlotWithPayment);
 // Route to verify payment
 router.post("/verify-payment", protect, verifyPayment);
 // Route to Get Appointments
-router.get("/user-appointments", protect,getUserAppointments);
+router.get("/user-appointments", protect, getUserAppointments);
 
 export default router;

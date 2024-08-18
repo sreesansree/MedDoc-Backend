@@ -70,7 +70,7 @@ export const protectDoctor = asyncHandler(async (req, res, next) => {
       // console.log(decoded.id, "decodeddddddd id");
 
       req.user = await Doctor.findById(decoded.id).select("-password");
-      console.log(req.user, "doctorrr");
+      // console.log(req.user, "doctorrr");
       if (!req.user) {
         throw new Error("Doctor not found");
       }

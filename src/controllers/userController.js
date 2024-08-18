@@ -220,3 +220,20 @@ export const getUserAppointments = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getUser = async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const user = await Doctor.findById(id);
+    // const user = await User.findById(id);
+    if (user) {
+      const { password, ...rest } = user._doc;
+      res.status(200).json(rest);
+    } else {
+      res.status(404).json("No such User");
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};

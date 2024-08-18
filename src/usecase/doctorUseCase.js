@@ -150,7 +150,7 @@ export const completePasswordResetUseCase = async (
 
 export const doctorProfilUpdateUseCase = async (doctorId, req) => {
   const bodyData = req.body;
-  console.log(bodyData, "body dataaa");
+  // console.log(bodyData, "body dataaa");
   if (!bodyData) {
     return res.status(400).json({ message: "All fields are required" });
   }

@@ -78,7 +78,7 @@ export const google = async (req, res, next) => {
       await newDoctor.save();
       const token = authService.generateToken(newDoctor);
       const { password, ...rest } = newDoctor._doc;
-      console.log(newDoctor._doc, "doccc");
+      // console.log(newDoctor._doc, "doccc");
       res
         .status(200)
         .cookie("doctorToken", token, {
@@ -115,7 +115,6 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
     const doctorId = req.params.id;
 
     const updatedDoctor = await doctorProfilUpdateUseCase(doctorId, req);
-    console.log(updatedDoctor, "updated doctor");
     if (updatedDoctor) {
       res.status(200).json(updatedDoctor);
       // .json({ message: "Profile updated successfully",  updatedDoctor });
@@ -131,9 +130,7 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id;
-    console.log(doctorId, " : Doctor ID");
     const appointments = await getAppointmentByDoctorID(doctorId);
-    console.log(appointments, ": Appointments of Doctor");
     res.status(200).json(appointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
