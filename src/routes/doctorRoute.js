@@ -9,6 +9,8 @@ import {
   completePasswordReset,
   updateDoctorProfile,
   getDoctorAppointments,
+  // getDoctor,
+  getUser,
 } from "../controllers/doctorController.js";
 import { isDoctor } from "../middleware/roleMiddleware.js";
 import { protectDoctor } from "../middleware/authMiddleware.js";
@@ -39,6 +41,11 @@ router.put(
   upload.single("certificate"),
   updateDoctorProfile
 );
+// get Doctor
+// router.get("/:id", getDoctor);
+
+// get User
+router.get('/user/:id',getUser)
 
 
 // new booking slot

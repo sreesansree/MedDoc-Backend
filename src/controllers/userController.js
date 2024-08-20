@@ -91,20 +91,12 @@ export const logoutUser = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-  // req.logout((err) => {
-  //   if (err) {
-  //     return res.status(500).json({ message: "Logout failed" });
-  //   }
-  //   res.clearCookie("token"); // Clear the session cookie
-  //   res.status(200).json({ message: "Logged out successfully" });
-  // });
+ 
 };
 
 export const doctorsList = asyncHandler(async (req, res) => {
   try {
     const doctors = await Doctor.find({}).populate("department");
-    // console.log("Doctors fetched:", doctors); // Debugging log
-
     res.status(200).json(doctors);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -195,9 +187,10 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const getDoctor = async (req, res) => {
+  console.log("DoctorId ==>",req.params.id)
   try {
     const doctor = await userUseCase.getDoctorById(req.params.id);
-    console.log(doctor, "Single Doctor Fetched");
+    // console.log(doctor, "Single Doctor Fetched");
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -223,15 +216,14 @@ export const getUserAppointments = async (req, res) => {
 
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
+  console.log('Params Id in UserRoute Get User ====> ',id);
   try {
     const user = await Doctor.findById(id);
-    // const user = await User.findById(id);
     if (user) {
       const { password, ...rest } = user._doc;
       res.status(200).json(rest);
     } else {
-      res.status(404).json("No such User");
+      res.status(404).json("No such Doctor");
     }
   } catch (error) {
     res.status(500).json(error);

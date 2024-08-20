@@ -5,7 +5,7 @@ import authService from "../service/authService.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/authUtils.js";
 import Doctor from "../models/DoctorModel.js";
-import bookingSlot from "../models/BookingSlotModel.js";
+import BookingSlot from "../models/BookingSlotModel.js";
 
 const registerUser = async ({ name, email, mobile, password }) => {
   const userExists = await User.findOne({ email });
@@ -113,7 +113,7 @@ const getAppointmentsByUserId = async (userId) => {
     //   .find({ user: userId })
     //   .populate("doctor");
     // return appointments;
-    return await bookingSlot.find({user:userId,isBooked: true}).populate("doctor");
+    return await BookingSlot.find({user:userId,isBooked: true}).populate("doctor");
   } catch (error) {
     throw new Error("Error fetching appointments: " + error.message);
   }

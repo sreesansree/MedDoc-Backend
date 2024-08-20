@@ -11,6 +11,7 @@ import {
   doctorProfilUpdateUseCase,
   getAppointmentByDoctorID,
 } from "../usecase/doctorUseCase.js";
+import User from "../models/UserModel.js";
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
@@ -130,6 +131,7 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id;
+    console.log("Doctor ID : ", doctorId);
     const appointments = await getAppointmentByDoctorID(doctorId);
     res.status(200).json(appointments);
   } catch (error) {
@@ -138,4 +140,33 @@ export const getDoctorAppointments = async (req, res) => {
   }
 };
 
+export const getDoctor = async (req, res) => {
+  const id = req.params.id;
+  console.log("'Params Id in Doctor Route Get User ====>  ", id);
+  try {
+    const user = await User.findById(id);
+    if (user) {
+      const { password, ...rest } = user._doc;
+      res.status(200).json(rest);
+    } else {
+      res.status(404).json("No such User");
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
 
+export const getUser = async (req, res) => {
+  const id = req.params.id;
+  console.log("user Id : ", req.params.id);
+  try {
+    const user = await User.findById(id);
+    console.log("user ====>", user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

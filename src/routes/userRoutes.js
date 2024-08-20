@@ -11,7 +11,7 @@ import {
   updateUser,
   getDoctor,
   getUserAppointments,
-  getUser,
+  // getUser,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -32,9 +32,9 @@ router.post("/login", loginUser);
 router.post("/logout", protect, isUser, logoutUser);
 router.post("/google", google);
 
-router.get("/:id", getUser);
+// router.get("/:id", getUser);
 
-router.get("/doctors-list", protect, doctorsList);
+router.get("/doctors", doctorsList);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
 router.put("/update/:userId", protect, updateUser);

@@ -136,6 +136,7 @@ export const getDoctorsSlots = async (req, res) => {
     const slots = await BookingSlot.find({
       doctor: id,
     });
+    console.log("Slotssssssss ================",slots)
 
     res.status(200).json(slots);
   } catch (error) {
