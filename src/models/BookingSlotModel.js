@@ -39,6 +39,15 @@ const bookingSlotSchema = mongoose.Schema({
     type: Boolean,
     default: false, // If you want to differentiate fixed slots
   },
+  // New fields for reminders
+  patientReminderSent: {
+    type: Boolean,
+    default: false,
+  },
+  doctorReminderSent: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const BookingSlot = mongoose.model("BookingSlot", bookingSlotSchema);

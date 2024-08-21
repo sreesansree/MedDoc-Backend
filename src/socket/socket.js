@@ -1,4 +1,6 @@
 import { Server } from "socket.io";
+import cron from "node-cron";
+import BookingSlot from "../models/BookingSlotModel.js";
 
 const setupSocket = (server) => {
   const io = new Server(server, {
@@ -14,7 +16,10 @@ const setupSocket = (server) => {
 
   io.on("connection", (socket) => {
     console.log("Connected to socket", socket.id);
-
+    const userId = socket.handshake.query.userId; // Pass userId when connecting
+    if (userId) {
+      socket.join(userId); // Join the room named after the userId
+    }
     /*  socket.on("setup", (userData) => {
       socket.join(userData._id);
       socket.emit("chat connected");
@@ -33,6 +38,7 @@ const setupSocket = (server) => {
       console.log("User disconnected");
     }); */
 
+    // Chat and user management logic
     /* add new user */
     socket.on("new-user-add", (newUserId) => {
       // if user is not added previously
@@ -58,6 +64,7 @@ const setupSocket = (server) => {
       }
     });
 
+    // Disconnect logic
     socket.on("disconnect", () => {
       activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
       console.log(
@@ -67,6 +74,87 @@ const setupSocket = (server) => {
       io.emit("get-users", activeUsers);
     });
   });
+
+  // Function to send appointment reminders
+  async function sendAppointmentReminders() {
+    const now = new Date('2024-08-21T18:00:00.000Z');
+    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+
+    // const slots = await BookingSlot.find({
+    //   date: {
+    //     $gte: now,
+    //     $lte: nextHour,
+    //   },
+    //   isBooked: true,
+    //   $or: [{ patientReminderSent: false }, { doctorReminderSent: false }],
+    // }).populate("doctor user"); // Fixed the populate syntax
+
+    // console.log("Slots found:", slots);
+  
+    
+    const slotsTest = await BookingSlot.find({ date: { $gte: now } });
+    console.log("Slot One",slotsTest); // Check if this returns data
+
+    const allSlots = await BookingSlot.find({}).populate('doctor user');
+    console.log("All Slots:", allSlots.map(slot => slot.date));
+    const slots = allSlots.filter(slot => {
+      return slot.date >= now && slot.date <= nextHour;
+    });
+    
+    console.log("Matching Slots (adjusted time):", slots);
+    
+
+    // const slotsTesttwo = await BookingSlot.find({
+    //   date: { $gte: now, $lte: nextHour },
+    // });
+    // console.log("Slots Two",slotsTesttwo); // Check again if it still has data
+
+    // slots.forEach((slot) => {
+    //   const user = activeUsers.find(
+    //     (u) => u.userId === slot.user._id.toString()
+    //   );
+    //   const doctor = activeUsers.find(
+    //     (u) => u.userId === slot.doctor._id.toString()
+    //   );
+    //   console.log("User Reminder ", user);
+    //   console.log("Doctor from Reminder ", doctor);
+    //   if (user) {
+    //     io.to(user.socketId).emit("appointmentReminder", {
+    //       message: `Reminder : You have an appointment with Dr. ${slot.doctor.name} at ${slot.startTime}.`,
+    //     });
+    //   }
+    //   if (doctor) {
+    //     io.to(doctor.socketId).emit("appointmentReminder", {
+    //       message: `Reminder : You have an appointment with ${slot.user.name} at ${slot.startTime}.`,
+    //     });
+    //   }
+    // });
+    slots.forEach(async (slot) => {
+      if (!slot.patientReminderSent && slot.user) {
+        // Send notification to patient
+        io.to(slot.user._id.toString()).emit("appointmentReminder", {
+          message: `You have an appointment  with Dr ${slot.doctor.name} on  ${slot.date.toLocaleDateString()} at ${
+            slot.startTime
+          }.`,
+          type: "reminder",
+        });
+        slot.patientReminderSent = false;
+      }
+      if (!slot.doctorReminderSent ) {
+        // Send notification to doctor
+        io.to(slot.doctor._id.toString()).emit("appointmentReminder", {
+          message: `You have an appointment on ${slot.date.toLocaleDateString()} at ${
+            slot.startTime
+          }.`,
+          type: "reminder",
+        });
+        slot.doctorReminderSent = false;
+      }
+      await slot.save();
+    });
+  }
+  // Schedule the job to run every 10 minutes
+  cron.schedule("* * * * *", sendAppointmentReminders);
 
   return io;
 };
