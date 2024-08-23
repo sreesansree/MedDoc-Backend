@@ -10,6 +10,9 @@ import { errorHandler } from "../utils/error.js";
 import otpService from "../service/otpService.js";
 import BookingSlot from "../models/BookingSlotModel.js";
 
+// Store the temporary doctor data
+let temporaryDoctorData = {};
+
 export const registerDoctorUseCase = async (
   name,
   email,
@@ -24,11 +27,13 @@ export const registerDoctorUseCase = async (
       existingDoctor.status = "pending";
       existingDoctor.rejectionReason = null;
       existingDoctor.applicationAttempts = 0;
+      await existingDoctor.save();
     } else {
       throw new Error("Doctor already exists with this email.");
     }
   }
 
+  /*  
   const hashedPassword = await hashPassword(password);
   const otp = otpService.generateOTP();
 
@@ -41,29 +46,86 @@ export const registerDoctorUseCase = async (
     otpExpires: Date.now() + 3600000, // one hour
   });
 
-  await doctor.save();
-  await otpService.sendOTP(email, otp);
-  console.log(otpService.sendOTP(email, otp));
+  await doctor.save(); */
 
-  return doctor;
+  // Store temporary doctor data
+  temporaryDoctorData[email] = {
+    name,
+    email,
+    password: await hashPassword(password),
+    certificate,
+    otp: otpService.generateOTP(),
+    otpExpires: Date.now() + 3600000, // OTP expires in 1 hour
+  };
+
+  // Send OTP
+  await otpService.sendOTP(email, temporaryDoctorData[email].otp);
+console.log(temporaryDoctorData[email],"Temporary")
+  return temporaryDoctorData[email];
+};
+
+// Resend OTP use case
+
+export const resendOtpUseCase = async (email) => {
+  const doctorData = temporaryDoctorData[email];
+  console.log(doctorData,"Doctor Data")
+  if (!doctorData) {
+    throw new Error("No registration data found for this email.");
+  }
+
+  // Generate a new OTP
+  doctorData.otp = otpService.generateOTP();
+  doctorData.otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+
+  // Resend the OTP
+  await otpService.sendOTP(email, doctorData.otp);
+console.log(doctorData,"from resend-otp")
+  return doctorData;
 };
 
 export const verifyOtpUseCase = async (email, enteredOtp) => {
-  const doctor = await Doctor.findOne({ email });
-  if (
-    !doctor ||
-    !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
-  ) {
-    throw new Error("Invalid OTP or OTP has expired");
-    // return errorHandler(400, "Invalid OTP or OTP has expired");
-  }
-  doctor.is_blocked = false;
-  doctor.isVerified = true;
-  doctor.otp = undefined;
-  doctor.otpExpires = undefined;
-  await doctor.save();
+  // const doctor = await Doctor.findOne({ email });
+  // if (
+  //   !doctor ||
+  //   !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
+  // ) {
+  //   throw new Error("Invalid OTP or OTP has expired");
+  //   // return errorHandler(400, "Invalid OTP or OTP has expired");
+  // }
+  // doctor.is_blocked = false;
+  // doctor.isVerified = true;
+  // doctor.otp = undefined;
+  // doctor.otpExpires = undefined;
+  // await doctor.save();
 
-  return doctor;
+  // return doctor;
+
+  const doctorData = temporaryDoctorData[email];
+  
+  if (!doctorData) {
+    throw new Error("No registration data found for this email. ");
+  }
+  // Validate the OTP
+  if (
+    !otpService.validateOtp(doctorData.otp, doctorData.otpExpires,enteredOtp)
+  ) {
+    throw new Error("Invalide OTP or OTP has Expired.");
+  }
+
+  // Save the doctor to the database after OTP validation
+
+  const newDoctor = new Doctor({
+    ...doctorData,
+    isVerified: true,
+    otp: undefined,
+    otpExpires: undefined,
+  });
+
+  await newDoctor.save();
+
+  // Clean up temporary data
+  delete temporaryDoctorData[email];
+  return newDoctor;
 };
 
 export const loginDoctorUseCase = async (email, password) => {

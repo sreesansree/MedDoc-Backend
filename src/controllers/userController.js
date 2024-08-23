@@ -8,6 +8,7 @@ import userUseCase, {
 import bcrypt from "bcrypt";
 import asyncHandler from "express-async-handler";
 import { errorHandler } from "../utils/error.js";
+import otpService from "../service/otpService.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -15,6 +16,28 @@ export const registerUser = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is Required. " });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    const otp = otpService.generateOTP();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+    await user.save();
+    await otpService.sendOTP(email, otp);
+
+    res.status(200).json({ message: "OTP has been resent to your email. " });
+  } catch (error) {
+    return res.status(404).json(error);
   }
 };
 
@@ -91,7 +114,6 @@ export const logoutUser = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
- 
 };
 
 export const doctorsList = asyncHandler(async (req, res) => {
@@ -187,7 +209,7 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const getDoctor = async (req, res) => {
-  console.log("DoctorId ==>",req.params.id)
+  console.log("DoctorId ==>", req.params.id);
   try {
     const doctor = await userUseCase.getDoctorById(req.params.id);
     // console.log(doctor, "Single Doctor Fetched");
@@ -216,7 +238,7 @@ export const getUserAppointments = async (req, res) => {
 
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  console.log('Params Id in UserRoute Get User ====> ',id);
+  console.log("Params Id in UserRoute Get User ====> ", id);
   try {
     const user = await Doctor.findById(id);
     if (user) {

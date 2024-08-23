@@ -10,8 +10,10 @@ import {
   completePasswordResetUseCase,
   doctorProfilUpdateUseCase,
   getAppointmentByDoctorID,
+  resendOtpUseCase,
 } from "../usecase/doctorUseCase.js";
 import User from "../models/UserModel.js";
+import otpService from "../service/otpService.js";
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
@@ -33,6 +35,30 @@ export const verifyOTP = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json({ message: "OTP verified successfully. You can log in." });
+});
+
+export const resendOtp = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is Required. " });
+    }
+
+    await resendOtpUseCase(email);
+
+    res.status(200).json({ message: "OTP has been resent to your email." });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+  /*  const doctor = await Doctor.findOne({ email });
+  if (!doctor) {
+    return res.status(404).json({ message: "Doctor not found." });
+  }
+  const otp = otpService.generateOTP();
+  doctor.otp = otp;
+  doctor.otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+  await doctor.save();
+  await otpService.sendOTP(email, otp); */
 });
 
 export const loginDoctor = asyncHandler(async (req, res) => {

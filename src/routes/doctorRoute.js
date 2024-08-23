@@ -11,6 +11,7 @@ import {
   getDoctorAppointments,
   // getDoctor,
   getUser,
+  resendOtp,
 } from "../controllers/doctorController.js";
 import { isDoctor } from "../middleware/roleMiddleware.js";
 import { protectDoctor } from "../middleware/authMiddleware.js";
@@ -33,7 +34,7 @@ router.post("/logout", protectDoctor, logoutDoctor);
 router.post("/google", google);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
-
+router.post("/resend-otp",resendOtp)
 router.put(
   "/profile/:id",
   protectDoctor,

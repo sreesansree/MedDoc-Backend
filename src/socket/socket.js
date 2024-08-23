@@ -77,7 +77,7 @@ const setupSocket = (server) => {
 
   // Function to send appointment reminders
   async function sendAppointmentReminders() {
-    const now = new Date('2024-08-21T18:00:00.000Z');
+    const now = new Date("2024-08-21T18:00:00.000Z");
     const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
 
     // const slots = await BookingSlot.find({
@@ -90,19 +90,20 @@ const setupSocket = (server) => {
     // }).populate("doctor user"); // Fixed the populate syntax
 
     // console.log("Slots found:", slots);
-  
-    
-    const slotsTest = await BookingSlot.find({ date: { $gte: now } });
-    console.log("Slot One",slotsTest); // Check if this returns data
 
-    const allSlots = await BookingSlot.find({}).populate('doctor user');
-    console.log("All Slots:", allSlots.map(slot => slot.date));
-    const slots = allSlots.filter(slot => {
+    const slotsTest = await BookingSlot.find({ date: { $gte: now } });
+    // console.log("Slot One", slotsTest); // Check if this returns data
+
+    const allSlots = await BookingSlot.find({}).populate("doctor user");
+    // console.log(
+    //   "All Slots:",
+    //   allSlots.map((slot) => slot.date)
+    // );
+    const slots = allSlots.filter((slot) => {
       return slot.date >= now && slot.date <= nextHour;
     });
-    
-    console.log("Matching Slots (adjusted time):", slots);
-    
+
+    // console.log("Matching Slots (adjusted time):", slots);
 
     // const slotsTesttwo = await BookingSlot.find({
     //   date: { $gte: now, $lte: nextHour },
@@ -133,19 +134,20 @@ const setupSocket = (server) => {
       if (!slot.patientReminderSent && slot.user) {
         // Send notification to patient
         io.to(slot.user._id.toString()).emit("appointmentReminder", {
-          message: `You have an appointment  with Dr ${slot.doctor.name} on  ${slot.date.toLocaleDateString()} at ${
-            slot.startTime
-          }.`,
+          message: `You have an appointment  with Dr ${
+            slot.doctor.name
+          } on  ${slot.date.toLocaleDateString()} at ${slot.startTime}.`,
           type: "reminder",
         });
         slot.patientReminderSent = false;
       }
-      if (!slot.doctorReminderSent ) {
+    
+      if (!slot.doctorReminderSent && slot.doctor) {
+        // Ensure slot.user is defined and has a name property
+        const userName = slot.user?.name || "User";
         // Send notification to doctor
         io.to(slot.doctor._id.toString()).emit("appointmentReminder", {
-          message: `You have an appointment on ${slot.date.toLocaleDateString()} at ${
-            slot.startTime
-          }.`,
+          message: `You have an appointment with ${userName} on ${slot.date.toLocaleDateString()} at ${slot.startTime}.`,
           type: "reminder",
         });
         slot.doctorReminderSent = false;

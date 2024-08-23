@@ -6,7 +6,7 @@ const generateOTP = () => {
 
 const sendOTP = async (email, otp) => {
   const subject = "MedDoc Verification";
-  const message = `Your OTP code is ${otp}. Please enter this code to verify your account.`;
+  const message = `Your OTP code is ${otp}. It will expire in 10 minutes. Please enter this code to verify your account.`;
 
   await sendEmail(email, subject, message);
 };
