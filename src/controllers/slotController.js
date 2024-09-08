@@ -25,8 +25,14 @@ export const createBookingSlot = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const doctorId = decoded.id;
+    console.log("date from create Slot : ", date);
 
     const slotDate = new Date(date);
+
+    console.log("Slot Date from createSlot : ", slotDate);
+    const adjustedDate = new Date(slotDate.getTime());
+
+    console.log("Adjusted Slot Date: ", adjustedDate);
     if (isNaN(slotDate.getTime())) {
       return res.status(400).json({ message: "Invalid date format" });
     }
@@ -136,7 +142,7 @@ export const getDoctorsSlots = async (req, res) => {
     const slots = await BookingSlot.find({
       doctor: id,
     });
-    console.log("Slotssssssss ================",slots)
+    // console.log("Slotssssssss ================",slots)
 
     res.status(200).json(slots);
   } catch (error) {
@@ -193,9 +199,9 @@ export const verifyPayment = async (req, res) => {
       return res.status(404).json({ message: "Slot not found" });
     }
     slot.isBooked = true;
-    slot.user = req.user.id
+    slot.user = req.user.id;
     await slot.save();
-    console.log(slot," : =====> slot booked")
+    // console.log(slot," : =====> slot booked")
     res.status(200).json({ message: "Payment successful and slot booked" });
   } else {
     res.status(400).json({ message: "Invalid signature" });

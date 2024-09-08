@@ -184,10 +184,10 @@ export const getDoctor = async (req, res) => {
 
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  console.log("user Id : ", req.params.id);
+  console.log("user Id from Get User : ", req.params.id);
   try {
     const user = await User.findById(id);
-    console.log("user ====>", user);
+    // console.log("user ====>", user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

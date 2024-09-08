@@ -209,7 +209,7 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const getDoctor = async (req, res) => {
-  console.log("DoctorId ==>", req.params.id);
+  console.log("DoctorId from getDoctor ==>", req.params.id);
   try {
     const doctor = await userUseCase.getDoctorById(req.params.id);
     // console.log(doctor, "Single Doctor Fetched");

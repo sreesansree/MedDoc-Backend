@@ -15,12 +15,12 @@ export const protect = asyncHandler(async (req, res, next) => {
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);
       // console.log(decoded, "==========> Decoded");
       // console.log(decoded.id, "==========> Decoded ID");
-      
+
       req.user = await User.findById(decoded.id).select("-password");
       if (!req.user) {
         throw new Error("User not found");
       }
-      console.log(req.user, "==========> req.user");
+      // console.log(req.user, "==========> req.user");
 
       next();
     } catch (error) {
@@ -34,17 +34,11 @@ export const protect = asyncHandler(async (req, res, next) => {
 
 export const protectAdmin = asyncHandler(async (req, res, next) => {
   let token;
-  // console.log(req.cookies.adminToken,'adminTokeen');
   if (req.cookies.adminToken) {
     try {
       token = req.cookies.adminToken;
-      // console.log(token, "tokennnn");
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decoded, "decodeddddddd");
-      console.log(decoded.id, "decodeddddddd id");
-
       req.user = await Admin.findById(decoded.id).select("-password");
-      console.log(req.user, "adminnnn");
       if (!req.user) {
         throw new Error("Admin not found");
       }
@@ -60,17 +54,13 @@ export const protectAdmin = asyncHandler(async (req, res, next) => {
 
 export const protectDoctor = asyncHandler(async (req, res, next) => {
   let token;
-  // console.log(req.cookies.adminToken,'adminTokeen');
   if (req.cookies.doctorToken) {
     try {
+      
       token = req.cookies.doctorToken;
-      // console.log(token, "tokennnn");
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-      // console.log(decoded, "decodeddddddd");
-      // console.log(decoded.id, "decodeddddddd id");
 
       req.user = await Doctor.findById(decoded.id).select("-password");
-      console.log(req.user, "doctorrr");
       if (!req.user) {
         throw new Error("Doctor not found");
       }
