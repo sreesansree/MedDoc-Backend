@@ -13,6 +13,8 @@ import {
   recentActivity,
   getDoctor,
   rejectDoctor,
+  initiateAdminPasswordReset,
+  completeAdminPasswordReset,
 } from "../controllers/adminController.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
@@ -22,6 +24,9 @@ const router = express.Router();
 
 router.post("/login", loginAdmin);
 router.post("/logout", protectAdmin, isAdmin, logoutAdmin);
+
+router.post("/forget-password", initiateAdminPasswordReset);
+router.post("/reset-password", completeAdminPasswordReset);
 
 // Users
 router.get("/users", protectAdmin, getUsers);

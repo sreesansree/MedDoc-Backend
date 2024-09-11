@@ -26,6 +26,12 @@ const adminSchema = new mongoose.Schema({
     enum: ["user", "doctor", "admin"],
     default: "admin",
   },
+  otp: {
+    type: String,
+  },
+  otpExpires: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: new Date(),

@@ -10,6 +10,13 @@ import doctorRoutes from "./routes/doctorRoute.js";
 import setupSocket from "./socket/socket.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoute.js";
+// import path from "path";
+
+// import { fileURLToPath } from "url";
+
+// Manually define __dirname
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 dotenv.config();
 connectDB();
@@ -31,6 +38,10 @@ app.use(cors(corsOptions));
 app.use(express.json({ extended: true, limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use(cookieParser());
+
+// Serve static files from the uploads folder
+app.use("/uploads", express.static("uploads"));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);

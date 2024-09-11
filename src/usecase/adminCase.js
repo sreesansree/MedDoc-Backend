@@ -2,10 +2,12 @@ import bcrypt from "bcrypt";
 import Admin from "../models/AdminModel.js";
 import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
-import { generateToken } from "../utils/authUtils.js";
+import { generateToken, hashPassword } from "../utils/authUtils.js";
 import { errorHandler } from "../utils/error.js";
 import authService from "../service/authService.js";
 import Department from "../models/Department.js";
+import AdminModel from "../models/AdminModel.js";
+import otpService from "../service/otpService.js";
 
 /* const loginAdmin = async (email, password) => {
   if (!email || !password || email === " " || password === " ") {
@@ -43,6 +45,37 @@ const loginAdmin = async (email, password) => {
   const adminToken = admin.adminToken;
   // const adminToken = generateToken(admin);
   return { admin, adminToken };
+};
+
+// forgotPassword
+const initiateAdminPasswordResetUseCase = async (email) => {
+  const admin = await AdminModel.findOne({ email });
+  if (!admin) {
+    throw new Error("No Admin Found with this email");
+  }
+  const resetToken = otpService.generateOTP();
+  admin.otp = resetToken;
+  admin.otpExpires = Date.now() + 3600000;
+  await admin.save();
+  await otpService.sendOTP(email, resetToken);
+};
+
+const completeAdminPasswordResetUseCase = async (
+  email,
+  enteredOtp,
+  newPassword
+) => {
+  const admin = await AdminModel.findOne({ email });
+  if (
+    !admin ||
+    !otpService.validateOtp(admin.otp, admin.otpExpires, enteredOtp)
+  ) {
+    throw new Error("Invalid OTP or has Expired");
+  }
+  admin.password = await hashPassword(newPassword);
+  admin.otp = undefined;
+  admin.otpExpires = undefined;
+  await admin.save();
 };
 
 // Add a new department
@@ -106,4 +139,6 @@ export default {
   getDepartmentByIdUseCase,
   updateDepartmentUseCase,
   deleteDepartmentUseCase,
+  initiateAdminPasswordResetUseCase,
+  completeAdminPasswordResetUseCase,
 };

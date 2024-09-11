@@ -1,9 +1,10 @@
 import express from "express";
-import { addMessage, getMessages } from "../controllers/messageController.js";
+import { sendMessage, getMessages } from "../controllers/messageController.js";
+import { upload } from "../middleware/multer.js";
 
 const router = express.Router();
 
-router.post("/", addMessage);
+router.post("/", upload.single("file"), sendMessage);
 router.get("/:chatId", getMessages);
 
 export default router;

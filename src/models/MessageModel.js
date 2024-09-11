@@ -11,6 +11,12 @@ const MessageSchema = mongoose.Schema(
     text: {
       type: String,
     },
+    file: {
+      type: String,
+    },
+    fileType: {
+      type: String, // Add the fileType field to store file type (e.g., image/jpeg)
+    },
   },
   { timestamps: true }
 );

@@ -34,13 +34,18 @@ const setupSocket = (server) => {
     });
 
     /* Send-messages */
+    // Handle file and message sending
+
     socket.on("send-message", (data) => {
-      const { receiverId } = data;
+      const { receiverId, message } = data;
       const user = activeUsers.find((user) => user.userId === receiverId);
-      console.log("Sending from Socket to : ", receiverId);
-      console.log("Data : ", data);
+
       if (user) {
-        io.to(user.socketId).emit("receive-message", data);
+        io.to(user.socketId).emit("receive-message", {
+          message: data.message,
+          file: data.file, // Include file URL
+          fileType: data.fileType, // Include file type
+        });
       }
     });
 
@@ -61,23 +66,21 @@ const setupSocket = (server) => {
     const now = new Date();
     const nextHour = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour ahead in UTC
 
-    // Convert `now` and `nextHour` to the local time (IST in your case)
+    // Convert `now` and `nextHour` to the local time (IST)
     const nowLocal = new Date(
       now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 60 * 60 * 1000
-    ); // IST = UTC + 5:30
+    );
     const nextHourLocal = new Date(
       nextHour.getTime() +
         nextHour.getTimezoneOffset() * 60000 +
         5.5 * 60 * 60 * 1000
-    ); // IST = UTC + 5:30
-
-    console.log("nowLocal ==> from socket Reminder", nowLocal);
-    console.log("nextHourLocal ==> from socket Reminder", nextHourLocal);
+    );
 
     try {
       const allSlots = await BookingSlot.find({ isBooked: true }).populate(
         "doctor user"
       );
+
       console.log(
         "All Slots from Socket Reminder ===> ",
         allSlots.map((slot) => slot.date)
@@ -168,7 +171,7 @@ const setupSocket = (server) => {
   }
 
   // Schedule cron job to check every 10 minutes
-  cron.schedule("* * * * *", sendAppointmentReminders);
+  cron.schedule("*/10 * * * *", sendAppointmentReminders);
 
   return io;
 };

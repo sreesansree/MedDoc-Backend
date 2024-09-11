@@ -1,17 +1,21 @@
 import MessageModel from "../models/MessageModel.js";
 
-export const addMessage = async (req, res) => {
-  const { chatId, senderId, text } = req.body;
-  const message = new MessageModel({
+export const sendMessage = async (req, res) => {
+  const { chatId, senderId, text, file, fileType } = req.body;
+
+  const newMessage = new MessageModel({
     chatId,
     senderId,
-    text,
+    text: text || "",
+    file: file || "", // Store Firebase file URL
+    fileType: fileType || "", // Store file type (image, video, audio)
   });
+
   try {
-    const result = await message.save();
+    const result = await newMessage.save();
     res.status(200).json(result);
   } catch (error) {
-    res.status(200).json(error);
+    res.status(500).json(error);
   }
 };
 

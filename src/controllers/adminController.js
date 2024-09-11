@@ -23,6 +23,24 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   }
 });
 
+// Forget password
+
+export const initiateAdminPasswordReset = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  await adminUseCase.initiateAdminPasswordResetUseCase(email);
+  res.status(200).json({
+    message: "Password reset initiated. check your email for the link.",
+  });
+});
+
+// Password Reset
+
+export const completeAdminPasswordReset = asyncHandler(async (req, res) => {
+  const { email, otp, password } = req.body;
+  await adminUseCase.completeAdminPasswordResetUseCase(email, otp, password);
+  res.status(200).json({ message: "Password reset Successful." });
+});
+
 // Logout admin
 export const logoutAdmin = asyncHandler(async (req, res) => {
   try {
