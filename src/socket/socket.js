@@ -37,14 +37,26 @@ const setupSocket = (server) => {
     // Handle file and message sending
 
     socket.on("send-message", (data) => {
-      const { receiverId, message } = data;
+      const { receiverId, senderId, senderName } = data;
       const user = activeUsers.find((user) => user.userId === receiverId);
+      console.log("Sending from Socket to : ", receiverId);
+      console.log("Data : ", data);
+      console.log("senderId : ", senderId);
+      console.log("senderName : ", senderName);
 
       if (user) {
         io.to(user.socketId).emit("receive-message", {
           message: data.message,
           file: data.file, // Include file URL
           fileType: data.fileType, // Include file type
+          chatId: data.chatId,
+        });
+        // Emit the notification with senderName
+        io.to(user.socketId).emit("getNotification", {
+          senderId: senderId,
+          senderName: senderName, // Include the senderName in the notification
+          isRead: false,
+          date: new Date(),
         });
       }
     });
