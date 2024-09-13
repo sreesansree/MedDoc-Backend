@@ -13,6 +13,10 @@ const MessageSchema = mongoose.Schema(
     text: {
       type: String,
     },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+    },
     file: {
       type: String,
     },
