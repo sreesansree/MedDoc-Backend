@@ -18,13 +18,14 @@ export const createChat = async (req, res) => {
     // Check if a chat already exists for this appointment
     let chat = await ChatModel.findOne({
       members: { $all: [senderId, receiverId] },
-      appointmentId,
+      // appointmentId,
     });
     // If no existing chat, create a new one
     if (!chat) {
       const newChat = new ChatModel({
         members: [senderId, receiverId],
-        appointmentId,
+        // appointmentId,
+        createdAt: Date.now(),
       });
       chat = await newChat.save();
     }
@@ -38,11 +39,21 @@ export const createChat = async (req, res) => {
 
 export const userChats = async (req, res) => {
   try {
-    const chat = await ChatModel.find({
-      members: { $in: [req.params.userId] },
+    const userId = req.params.userId;
+    const chats = await ChatModel.find({
+      members: { $in: [userId] },
     });
-    // console.log(chat,'Chatsssss')
-    res.status(200).json(chat);
+    const currentTime = Date.now();
+
+    const expiredChats = chats.filter((chat) => {
+      const chatTime = new Date(chat.createdAt).getTime();
+      return currentTime - chatTime > 48 * 60 * 60 * 1000; // 48 hours in milliseconds
+    });
+    // If there are expired chats, return a flag to indicate expiration
+    res.status(200).json({
+      chats,
+      expiredChats: expiredChats.length > 0,
+    });
   } catch (error) {
     res.status(500).json(error);
   }

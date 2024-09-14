@@ -7,7 +7,7 @@ const ChatSchema = mongoose.Schema(
     },
     appointmentId: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }
