@@ -12,6 +12,10 @@ import {
   // getDoctor,
   getUser,
   resendOtp,
+  cancelAppointment,
+  canceledDoctorAppointments,
+  completeConsultation,
+  completedDoctorAppointments,
 } from "../controllers/doctorController.js";
 import { isDoctor } from "../middleware/roleMiddleware.js";
 import { protectDoctor } from "../middleware/authMiddleware.js";
@@ -21,6 +25,7 @@ import { upload } from "../middleware/multer.js";
 import {
   createBookingSlot,
   deleteBookingSlot,
+  getAppointment,
   getDoctorsSlots,
   updateBookingSlot,
 } from "../controllers/slotController.js";
@@ -34,7 +39,7 @@ router.post("/logout", protectDoctor, logoutDoctor);
 router.post("/google", google);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
-router.post("/resend-otp",resendOtp)
+router.post("/resend-otp", resendOtp);
 router.put(
   "/profile/:id",
   protectDoctor,
@@ -46,8 +51,7 @@ router.put(
 // router.get("/:id", getDoctor);
 
 // get User
-router.get('/user/:id',getUser)
-
+router.get("/user/:id", getUser);
 
 // new booking slot
 router.post("/slots", protectDoctor, isDoctor, createBookingSlot);
@@ -59,5 +63,31 @@ router.put("/slots/:slotId", protectDoctor, isDoctor, updateBookingSlot);
 router.delete("/slots/:slotId", protectDoctor, isDoctor, deleteBookingSlot);
 // Get Doctor Appointments
 router.get("/doctor-appointments", protectDoctor, getDoctorAppointments);
+// Route to get Single Appointment
+router.get("/doctor-appointments/:id", getAppointment);
+// Route to Cancel Appointment
+router.post(
+  "/doctor-appointments/:id/cancel",
+  protectDoctor,
+  cancelAppointment
+);
+// Route to get Canceled Appointment
+router.get(
+  "/doctor-canceled-appointments",
+  protectDoctor,
+  canceledDoctorAppointments
+);
+// Route to complete the consultation
+router.post(
+  "/doctor-appointments/:id/complete",
+  protectDoctor,
+  completeConsultation
+);
+// Route to get Completed Consultation
+router.get(
+  "/doctor-completed-appointments",
+  protectDoctor,
+  completedDoctorAppointments
+);
 
 export default router;

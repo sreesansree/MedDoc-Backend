@@ -200,6 +200,7 @@ export const verifyPayment = async (req, res) => {
     }
     slot.isBooked = true;
     slot.user = req.user.id;
+    slot.paymentId = paymentId;
     await slot.save();
     // console.log(slot," : =====> slot booked")
     res.status(200).json({ message: "Payment successful and slot booked" });
@@ -288,3 +289,84 @@ export const deleteBookingSlot = async (req, res) => {
     res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
+
+// single Appointment
+export const getAppointment = async (req, res) => {
+  const { id } = req.params;
+  console.log("id from getAppointment : ", id);
+  try {
+    const appointment = await BookingSlot.findById(id)
+      .populate("doctor")
+      .populate("user");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    console.log("Appointmnet  : ", appointment);
+
+    res.status(200).json(appointment);
+  } catch (error) {
+    console.error("Error fetching appointment:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Cancel appointment and issue refund
+export const cancelAppointment = async (req, res) => {
+  const { id } = req.params; // appointment ID
+  const { reason } = req.body;
+  let refundSuccess = false;
+  try {
+    const appointment = await BookingSlot.findById(id);
+    // console.log(appointment, " : appointment ");
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // if appointment is already cancelled, return an error
+    if (appointment.status === "canceled") {
+      return res.status(400).json({ message: "Appointment already canceled" });
+    }
+
+    // refund logic
+    if (appointment.isBooked && appointment.paymentId) {
+      const refund = await razorpay.payments.refund(appointment.paymentId);
+
+      if (!refund) {
+        return res.status(500).json({ message: "Refund failed" });
+      }
+      refundSuccess = true;
+    }
+
+    // update appointment status to canceled
+    appointment.status = "canceled";
+    appointment.cancelReason = reason;
+    appointment.isBooked = false;
+    await appointment.save();
+    res
+      .status(200)
+      .json({ message: "Appointment Canceled Successfully", refundSuccess });
+  } catch (error) {
+    console.error("Error canceling appointment:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+// Fetch only canceled appointments for the user
+
+// export const getCanceledAppointmentsUser = async (req, res) => {
+//   const id= req.user.id;
+//   try {
+//     const canceledAppointments = await BookingSlot.find({
+//       user: id,
+//       status: "canceled",
+//     })
+//       .populate("doctor")
+//       .populate("user")
+//       .sort({ date: 1 });
+//     res.status(200).json(canceledAppointments);
+//   } catch (error) {
+//     console.error("Error fetching canceled appointments:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };

@@ -11,8 +11,6 @@ export const authorize = (...roles) => {
 const isUser = (req, res, next) => {
   // console.log(req.user, "req.userrr");
   // console.log(req.user.role, "req.userrr.roleee");
-  console.log(req.user, "req.user");
-  console.log(req.user.role, "req.user.roleee");
   if (req.user && req.user.role === "user") {
     next();
   } else {

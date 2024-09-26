@@ -60,7 +60,7 @@ export const registerDoctorUseCase = async (
 
   // Send OTP
   await otpService.sendOTP(email, temporaryDoctorData[email].otp);
-console.log(temporaryDoctorData[email],"Temporary")
+  console.log(temporaryDoctorData[email], "Temporary");
   return temporaryDoctorData[email];
 };
 
@@ -68,7 +68,7 @@ console.log(temporaryDoctorData[email],"Temporary")
 
 export const resendOtpUseCase = async (email) => {
   const doctorData = temporaryDoctorData[email];
-  console.log(doctorData,"Doctor Data")
+  console.log(doctorData, "Doctor Data");
   if (!doctorData) {
     throw new Error("No registration data found for this email.");
   }
@@ -79,7 +79,7 @@ export const resendOtpUseCase = async (email) => {
 
   // Resend the OTP
   await otpService.sendOTP(email, doctorData.otp);
-console.log(doctorData,"from resend-otp")
+  console.log(doctorData, "from resend-otp");
   return doctorData;
 };
 
@@ -101,13 +101,13 @@ export const verifyOtpUseCase = async (email, enteredOtp) => {
   // return doctor;
 
   const doctorData = temporaryDoctorData[email];
-  
+
   if (!doctorData) {
     throw new Error("No registration data found for this email. ");
   }
   // Validate the OTP
   if (
-    !otpService.validateOtp(doctorData.otp, doctorData.otpExpires,enteredOtp)
+    !otpService.validateOtp(doctorData.otp, doctorData.otpExpires, enteredOtp)
   ) {
     throw new Error("Invalide OTP or OTP has Expired.");
   }
@@ -255,7 +255,30 @@ export const getAppointmentByDoctorID = async (doctorId) => {
     return await BookingSlot.find({
       doctor: doctorId,
       isBooked: true,
+      status: "upcoming",
     }).populate("user");
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
+};
+
+export const getCanceledAppointments = async (doctorId) => {
+  try {
+    return await BookingSlot.find({
+      doctor: doctorId,
+      status: "canceled",
+    }).populate("doctor user");
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
+};
+
+export const getCompletedAppointments = async (doctorId) => {
+  try {
+    return await BookingSlot.find({
+      doctor: doctorId,
+      status: "completed",
+    }).populate("doctor user prescription");
   } catch (error) {
     throw new Error("Error fetching appointments: " + error.message);
   }

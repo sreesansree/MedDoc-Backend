@@ -13,7 +13,9 @@ import ChatModel from "../models/ChatModel.js";
 // };
 
 export const createChat = async (req, res) => {
-  const { senderId, receiverId, appointmentId } = req.body;
+  const { senderId, receiverId } = req.body;
+  console.log(senderId ," : SenderId")
+  console.log(receiverId ," : ReceiverId")
   try {
     // Check if a chat already exists for this appointment
     let chat = await ChatModel.findOne({

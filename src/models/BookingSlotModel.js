@@ -48,6 +48,26 @@ const bookingSlotSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  status: {
+    type: String,
+    enum: ["upcoming", "completed", "canceled"], // Defines possible status values
+    default: "upcoming", // Default value for new appointments
+  },
+  // Field for cancellation reason
+  cancelReason: {
+    type: String,
+    required: function () {
+      return this.status === "canceled"; // Required only if status is 'canceled'
+    },
+    default: null, // Default is null when not canceled
+  },
+  paymentId: {
+    type: String,
+  },
+  prescription: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Prescription",
+  },
 });
 
 const BookingSlot = mongoose.model("BookingSlot", bookingSlotSchema);

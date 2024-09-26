@@ -49,7 +49,7 @@ const loginUser = async ({ email, password }) => {
   const user = await authService.authenticateUser(email, password);
   const token = user.token;
   console.log(token);
-  console.log(user,'user from login userCase')
+  console.log(user, "user from login userCase");
   return { user, token };
 };
 
@@ -113,7 +113,20 @@ const getAppointmentsByUserId = async (userId) => {
     //   .find({ user: userId })
     //   .populate("doctor");
     // return appointments;
-    return await BookingSlot.find({user:userId,isBooked: true}).populate("doctor");
+    return await BookingSlot.find({ user: userId, isBooked: true }).populate(
+      "doctor"
+    );
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
+};
+
+const getCanceledAppointments = async (userId) => {
+  try {
+    return await BookingSlot.find({
+      user: userId,
+      status: "canceled",
+    }).populate("doctor user");
   } catch (error) {
     throw new Error("Error fetching appointments: " + error.message);
   }
@@ -126,4 +139,5 @@ export default {
   // google,
   getDoctorById,
   getAppointmentsByUserId,
+  getCanceledAppointments
 };

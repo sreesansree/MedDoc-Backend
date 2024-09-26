@@ -209,7 +209,7 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const getDoctor = async (req, res) => {
-  console.log("DoctorId from getDoctor ==>", req.params.id);
+  console.log("DoctorId from getDoctor ==>", req.params._id);
   try {
     const doctor = await userUseCase.getDoctorById(req.params.id);
     // console.log(doctor, "Single Doctor Fetched");
@@ -232,6 +232,20 @@ export const getUserAppointments = async (req, res) => {
     res.status(200).json(appointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// get canceled user-appointments
+
+export const canceledUserAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const canceledAppointment = await userUseCase.getCanceledAppointments(
+      userId
+    );
+    res.status(200).json(canceledAppointment);
+  } catch (error) {
+    console.error("Error fetching canceled appointments:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

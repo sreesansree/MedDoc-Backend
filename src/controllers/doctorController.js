@@ -1,7 +1,9 @@
 import Doctor from "../models/DoctorModel.js";
+import Prescription from "../models/Prescription.js";
 import authService from "../service/authService.js";
 import bcrypt from "bcrypt";
 import asyncHandler from "express-async-handler";
+import Razorpay from "razorpay";
 import {
   registerDoctorUseCase,
   verifyOtpUseCase,
@@ -11,9 +13,18 @@ import {
   doctorProfilUpdateUseCase,
   getAppointmentByDoctorID,
   resendOtpUseCase,
+  getCanceledAppointments,
+  getCompletedAppointments,
 } from "../usecase/doctorUseCase.js";
 import User from "../models/UserModel.js";
 import otpService from "../service/otpService.js";
+import BookingSlot from "../models/BookingSlotModel.js";
+import nodemailer from "nodemailer";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RazorpayId,
+  key_secret: process.env.RazorpayKeySecret,
+});
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   try {
@@ -194,5 +205,143 @@ export const getUser = async (req, res) => {
     return res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const cancelAppointment = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  let refundSuccess = false;
+  try {
+    const appointment = await BookingSlot.findById(id).populate("user doctor");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    // Check if payment exists
+    if (!appointment.paymentId) {
+      return res
+        .status(400)
+        .json({ message: "No payment found for this appointment." });
+    }
+
+    // Initiate refund via Razorpay
+    const refundResponse = await razorpay.payments.refund(
+      appointment.paymentId
+    );
+
+    if (!refundResponse || refundResponse.status !== "processed") {
+      return res
+        .status(500)
+        .json({ message: "Refund failed, please try again." });
+    }
+    refundSuccess = true;
+    // Update the appointment status to canceled
+    appointment.status = "canceled";
+    appointment.cancelReason = reason;
+    appointment.isBooked = false;
+    await appointment.save();
+    // Get user and doctor details
+    const user = appointment.user;
+    const doctor = appointment.doctor;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: "MedDoc",
+      to: user.email, // Send to user's email
+      subject: "Your Appointment Has Been Canceled and Refunded",
+      html: `
+        <h1>Appointment Cancellation and Refund Notice</h1>
+        <p>Dear ${user.name},</p>
+        <p>Your appointment with Dr. ${doctor.name} scheduled for ${appointment.date} has been canceled.</p>
+        <p>Reason for cancellation: ${reason}</p>
+        <p>A refund of your payment has been processed successfully.</p>
+        <p>If you have any questions, feel free to contact us.</p>
+        <p>Thank you,<br>MedDoc</p>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({
+      message: "Appointment canceled and refund processed successfully.",
+    });
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    res
+      .status(500)
+      .json({ message: "Server error, could not cancel appointment." });
+  }
+};
+
+// get Canceled doctor-appointments
+export const canceledDoctorAppointments = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const canceledAppointment = await getCanceledAppointments(doctorId);
+    res.status(200).json(canceledAppointment);
+  } catch (error) {
+    console.error("Error fetching canceled appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Complete Consultation
+
+export const completeConsultation = async (req, res) => {
+  const { id } = req.params; // appointment ID
+  const { medicines, notes } = req.body;
+  try {
+    const appointment = await BookingSlot.findById(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    // Ensure the doctor is the one who owns the appointment
+    if (appointment.doctor.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    // Mark the appointment as complete
+    appointment.status = "completed";
+
+    // Create a new prescription entry
+    const newPrescription = new Prescription({
+      appointment: id,
+      doctor: req.user.id,
+      patient: appointment.user,
+      // prescriptionText: prescription,
+      medicines: medicines,
+      notes,
+    });
+
+    // Save the prescription and update the appointment
+    await newPrescription.save();
+    appointment.prescription = newPrescription._id; // Link prescription to appointment
+    await appointment.save();
+
+    res
+      .status(200)
+      .json({ message: "Consultation completed successfully", appointment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error completing consultation" });
+  }
+};
+
+export const completedDoctorAppointments = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    console.log("Doctor Id From completed Appointment : ", doctorId);
+    const completedAppointments = await getCompletedAppointments(doctorId);
+    console.log("Completed Appointments : ", completedAppointments);
+    res.status(200).json(completedAppointments);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching completed appointments" });
   }
 };
