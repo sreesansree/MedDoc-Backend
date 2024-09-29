@@ -132,6 +132,17 @@ const getCanceledAppointments = async (userId) => {
   }
 };
 
+const getCompletedAppointments = async (userId) => {
+  try {
+    return await BookingSlot.find({
+      user: userId,
+      status: "completed",
+    }).populate("doctor user prescription");
+  } catch (error) {
+    throw new Error("Error fetching appointments: " + error.message);
+  }
+};
+
 export default {
   registerUser,
   verifyOTP,
@@ -139,5 +150,6 @@ export default {
   // google,
   getDoctorById,
   getAppointmentsByUserId,
-  getCanceledAppointments
+  getCanceledAppointments,
+  getCompletedAppointments,
 };

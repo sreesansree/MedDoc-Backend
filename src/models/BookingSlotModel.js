@@ -68,6 +68,9 @@ const bookingSlotSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Prescription",
   },
+  rating: {
+    type: Number,
+  },
 });
 
 const BookingSlot = mongoose.model("BookingSlot", bookingSlotSchema);

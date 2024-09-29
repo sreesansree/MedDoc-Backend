@@ -67,6 +67,7 @@ export const createBookingSlot = async (req, res) => {
         { startTime: "13:00", endTime: "13:30" },
         { startTime: "14:00", endTime: "14:30" },
         { startTime: "15:00", endTime: "15:30" },
+        { startTime: "16:00", endTime: "16:30" },
         { startTime: "18:00", endTime: "18:30" },
       ];
 

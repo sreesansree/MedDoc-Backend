@@ -309,6 +309,7 @@ export const completeConsultation = async (req, res) => {
 
     // Mark the appointment as complete
     appointment.status = "completed";
+    appointment.isBooked = false;
 
     // Create a new prescription entry
     const newPrescription = new Prescription({

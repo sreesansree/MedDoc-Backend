@@ -13,6 +13,8 @@ import {
   getUserAppointments,
   resendOtp,
   canceledUserAppointments,
+  getCompletedUserAppointments,
+  rateDoctor,
   // getUser,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -25,7 +27,7 @@ import {
   bookSlotWithPayment,
   cancelAppointment,
   getAppointment,
-  // getCanceledAppointmentsUser, 
+  // getCanceledAppointmentsUser,
   verifyPayment,
 } from "../controllers/slotController.js";
 
@@ -65,5 +67,13 @@ router.get("/user-appointments/:id", protect, getAppointment);
 router.post("/user-appointments/:id/cancel", protect, cancelAppointment);
 // Route to get Canceled Appointments
 router.get("/user-canceled-appointments", protect, canceledUserAppointments);
+// Route to get Completed Appointments
+router.get(
+  "/user-completed-appointments",
+  protect,
+  getCompletedUserAppointments
+);
+//Route to rate-doctor
+router.post("/rate-doctor", protect, rateDoctor);
 
 export default router;

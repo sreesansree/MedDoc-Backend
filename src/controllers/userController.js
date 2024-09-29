@@ -9,6 +9,7 @@ import bcrypt from "bcrypt";
 import asyncHandler from "express-async-handler";
 import { errorHandler } from "../utils/error.js";
 import otpService from "../service/otpService.js";
+import BookingSlot from "../models/BookingSlotModel.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -246,6 +247,54 @@ export const canceledUserAppointments = async (req, res) => {
     res.status(200).json(canceledAppointment);
   } catch (error) {
     console.error("Error fetching canceled appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getCompletedUserAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const completedAppointment = await userUseCase.getCompletedAppointments(
+      userId
+    );
+    res.status(200).json(completedAppointment);
+  } catch (error) {
+    console.error("Error fetching completed appointments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const rateDoctor = async (req, res) => {
+  try {
+    const { appointmentId, doctorId, rating } = req.body;
+
+    // Check if appointment exists and is Completed
+    const appointment = await BookingSlot.findById(appointmentId);
+    if (!appointment || appointment.status !== "completed") {
+      return res
+        .status(404)
+        .json({ message: "Appointment not found or not Completed" });
+    }
+
+    // Store the rating in the appointment if needed
+    appointment.rating = rating;
+    await appointment.save();
+
+    //Update doctor's rating
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    doctor.totalRatings += rating;
+    doctor.ratingCount += 1;
+    doctor.averageRating = doctor.totalRatings / doctor.ratingCount;
+
+    await doctor.save();
+
+    res.status(200).json({ message: "Rating Submitted Successfully" });
+  } catch (error) {
+    console.error("Error submitting rating:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
