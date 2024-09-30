@@ -45,7 +45,7 @@ export const completeAdminPasswordReset = asyncHandler(async (req, res) => {
 // Logout admin
 export const logoutAdmin = asyncHandler(async (req, res) => {
   try {
-    console.log("Logging out admin");
+    // console.log("Logging out admin");
     res.clearCookie("adminToken").status(200).json("Admin has been logout");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
@@ -68,7 +68,7 @@ export const getDoctors = async (req, res) => {
 export const getDoctor = async (req, res) => {
   try {
     const doctor = await adminUseCase.getDoctorById(req.params.id);
-    console.log(doctor, "Single Doctor Fetched");
+    // console.log(doctor, "Single Doctor Fetched");
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -103,7 +103,7 @@ export const getPendingSlots = async (req, res) => {
 // Block a user
 export const blockUser = async (req, res) => {
   const { id } = req.params;
-  console.log(id, "block-user id");
+  // console.log(id, "block-user id");
   try {
     await User.findByIdAndUpdate(id, { is_blocked: true }, { new: true });
     res.status(200).json({ message: "User blocked successfully" });
@@ -116,7 +116,7 @@ export const blockUser = async (req, res) => {
 
 export const unblockUser = async (req, res) => {
   const { id } = req.params;
-  console.log((id, "un-block user id"));
+  // console.log((id, "un-block user id"));
   try {
     await User.findByIdAndUpdate(id, { is_blocked: false });
     res.status(200).json({ message: "User Unblocked successfully" });
@@ -154,8 +154,8 @@ export const rejectDoctor = async (req, res) => {
   const { id } = req.params;
   try {
     const { rejectionReason } = req.body;
-    console.log(rejectionReason, "rejectionReason..........");
-    console.log(req.body, "body contenttttttt");
+    // console.log(rejectionReason, "rejectionReason..........");
+    // console.log(req.body, "body contenttttttt");
     if (!rejectionReason) {
       return res.status(400).json({ message: "Reason is required." });
     }
@@ -201,8 +201,8 @@ export const blockDoctor = async (req, res) => {
 // Unblock a doctor
 export const unblockDoctor = async (req, res) => {
   const { id } = req.params;
-  console.log(req.params, "paramsssss");
-  console.log(id, "iddddddddd");
+  // console.log(req.params, "paramsssss");
+  // console.log(id, "iddddddddd");
   try {
     await Doctor.findByIdAndUpdate(id, { is_blocked: false });
     res.status(200).json({ message: "Doctor unblocked successfully" });
