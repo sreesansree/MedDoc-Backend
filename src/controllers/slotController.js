@@ -25,11 +25,9 @@ export const createBookingSlot = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const doctorId = decoded.id;
-    console.log("date from create Slot : ", date);
 
     const slotDate = new Date(date);
 
-    console.log("Slot Date from createSlot : ", slotDate);
     const adjustedDate = new Date(slotDate.getTime());
 
     console.log("Adjusted Slot Date: ", adjustedDate);
@@ -52,11 +50,31 @@ export const createBookingSlot = async (req, res) => {
         .json({ message: "Start time must be before end time" });
     }
 
+    // Enforce minimum 10-minute difference between startTime and endTime
+    if (parseTime(endTime) - parseTime(startTime) < 10) {
+      return res
+        .status(400)
+        .json({ message: "Slot duration must be at least 10 minutes" });
+    }
+
     // Fetch existing slots for the same doctor and date
     const existingSlots = await BookingSlot.find({
       date: slotDate,
       doctor: doctorId,
     });
+
+    // Helper function for calculate the difference between two times in minutes
+    // const timeDifferenceInMinutes = (start1, end1, start2, end2) => {
+    //   const startTime1 = parseTime(start1);
+    //   const endTime1 = parseTime(end1);
+    //   const startTime2 = parseTime(start2);
+    //   const endTime2 = parseTime(end2);
+
+    //   const gap1 = (startTime2 - endTime1) / (1000 * 60);
+    //   const gap2 = (startTime1 - endTime2) / (1000 * 60);
+
+    //   return Math.min(gap1, gap2);
+    // };
 
     // If the slot is a fixed slot, check against predefined fixed slots
     if (fixedSlot) {
@@ -80,17 +98,32 @@ export const createBookingSlot = async (req, res) => {
       }
 
       // Check if the fixed slot overlaps with any existing slot
+      // const overlappingSlot = existingSlots.find(
+      //   (slot) =>
+      //     timeDifferenceInMinutes(
+      //       startTime,
+      //       endTime,
+      //       slot.startTime,
+      //       slot.endTime
+      //     ) < 10
+      // );
       const overlappingSlot = existingSlots.find(
         (slot) =>
           parseTime(startTime) < parseTime(slot.endTime) &&
           parseTime(endTime) > parseTime(slot.startTime)
       );
-
       if (overlappingSlot) {
         return res
           .status(400)
           .json({ message: "Time overlap with an existing slot" });
       }
+
+      // if (overlappingSlot) {
+      //   return res.status(400).json({
+      //     message:
+      //       "Time overlap or gap less than 10 minutes with an existing slot",
+      //   });
+      // }
     } else {
       // For non-fixed slots, check if there are already 8 slots
       if (existingSlots.length >= 8) {
