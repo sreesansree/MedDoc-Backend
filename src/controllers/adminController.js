@@ -5,6 +5,7 @@ import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
 import Activity from "../models/ActivityModel.js";
 import sendEmail from "../utils/sendEmail.js";
+import BookingSlot from "../models/BookingSlotModel.js";
 // Login admin
 
 export const loginAdmin = asyncHandler(async (req, res) => {
@@ -83,6 +84,17 @@ export const getUsers = async (req, res) => {
     const users = await User.find({});
     // console.log(users, "userrrrr");
     res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all pendings slots
+
+export const getPendingSlots = async (req, res) => {
+  try {
+    const slots = await BookingSlot.find({ status: "upcoming" });
+    res.status(200).json(slots);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

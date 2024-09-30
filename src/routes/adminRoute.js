@@ -15,6 +15,7 @@ import {
   rejectDoctor,
   initiateAdminPasswordReset,
   completeAdminPasswordReset,
+  getPendingSlots,
 } from "../controllers/adminController.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
@@ -47,5 +48,8 @@ router.post("/unblock-doctor/:id", protectAdmin, unblockDoctor);
 
 // Departments
 router.use("/departments", departmentRoutes);
+
+//Get Pending Slots
+router.get("/upcoming-slots", protectAdmin, getPendingSlots);
 
 export default router;
