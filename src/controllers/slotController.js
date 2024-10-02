@@ -3,6 +3,9 @@ import BookingSlot from "../models/BookingSlotModel.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import Doctor from "../models/DoctorModel.js";
+import User from "../models/UserModel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RazorpayId,
@@ -404,3 +407,71 @@ export const cancelAppointment = async (req, res) => {
 //     res.status(500).json({ message: "Internal server error" });
 //   }
 // };
+
+export const selectNewSlot = async (req, res) => {
+  const { appointmentId } = req.params;
+  const { selectedSlot } = req.body;
+  try {
+    const appointment = await BookingSlot.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not Found" });
+    }
+
+    // Update the appointment with selected new slot
+    appointment.startTime = selectedSlot.startTime;
+    appointment.endTime = selectedSlot.endTime;
+    appointment.date = selectedSlot.date;
+    appointment.rescheduled = true;
+
+    await appointment.save();
+
+    const doctor = await Doctor.findById(appointment.doctor);
+    const user = await User.findById(appointment.user);
+
+    // Send confirmation emails to both the doctor and user
+    sendEmail(
+      doctor.email,
+      "Appointment Rescheduled",
+      `Your appointment with ${user.name} has been rescheduled to ${appointment.date} - ${appointment.startTime} to ${appointment.endTime}.`
+    );
+    sendEmail(
+      user.email,
+      "Appointment Rescheduled Confirmation",
+      `Your appointment with Dr. ${doctor.name} has been rescheduled to ${appointment.date} - ${appointment.startTime} to ${appointment.endTime}.`
+    );
+
+    res
+      .status(200)
+      .json({ message: "Appointment Rescheduled successfully", appointment });
+  } catch (error) {
+    console.error("Error selecting new slot:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
+  }
+};
+
+export const getAvailableRescheduledSlots = async (req, res) => {
+  const { appointmentId } = req.params;
+  try {
+    // Fetching the appointment details
+    const appointment = await BookingSlot.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    // Assume that the new available slots are part of the appointment data
+    // OR if newSlots are not in the appointment, fetch them from a separate Slots table
+    const availableSlots = appointment.newSlots || [];
+    // Check if availableSlots exists, otherwise return an error
+    if (!availableSlots.length) {
+      return res
+        .status(404)
+        .json({ message: "No available reschedule slots." });
+    }
+
+    res.status(200).json(availableSlots);
+  } catch (error) {
+    console.error("Error fetching available reschedule slots:", error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while fetching reschedule slots." });
+  }
+};

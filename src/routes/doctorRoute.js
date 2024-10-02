@@ -16,6 +16,7 @@ import {
   canceledDoctorAppointments,
   completeConsultation,
   completedDoctorAppointments,
+  sendRescheduleRequest,
 } from "../controllers/doctorController.js";
 import { isDoctor } from "../middleware/roleMiddleware.js";
 import { protectDoctor } from "../middleware/authMiddleware.js";
@@ -89,5 +90,7 @@ router.get(
   protectDoctor,
   completedDoctorAppointments
 );
+//Route for doctor to send reshedule request
+router.post("/reshedule/:appointmentId", protectDoctor, sendRescheduleRequest);
 
 export default router;

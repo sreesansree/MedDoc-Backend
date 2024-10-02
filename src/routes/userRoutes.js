@@ -27,6 +27,8 @@ import {
   bookSlotWithPayment,
   cancelAppointment,
   getAppointment,
+  getAvailableRescheduledSlots,
+  selectNewSlot,
   // getCanceledAppointmentsUser,
   verifyPayment,
 } from "../controllers/slotController.js";
@@ -75,5 +77,9 @@ router.get(
 );
 //Route to rate-doctor
 router.post("/rate-doctor", protect, rateDoctor);
+// Get rescheduled slots
+router.get('/reschedule-slots/:appointmentId',protect,getAvailableRescheduledSlots)
+//Route for user to select a new slot
+router.put("/select-slot/:appointmentId", protect, selectNewSlot);
 
 export default router;

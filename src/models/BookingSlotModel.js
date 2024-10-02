@@ -71,6 +71,17 @@ const bookingSlotSchema = mongoose.Schema({
   rating: {
     type: Number,
   },
+  rescheduled: {
+    type: Boolean,
+    default: false,
+  },
+  newSlots: [
+    {
+      date: { type: String, required: true },
+      startTime: { type: String, required: true },
+      endTime: { type: String, required: true },
+    },
+  ],
 });
 
 const BookingSlot = mongoose.model("BookingSlot", bookingSlotSchema);

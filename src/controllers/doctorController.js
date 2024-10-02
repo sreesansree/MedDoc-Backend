@@ -20,6 +20,7 @@ import User from "../models/UserModel.js";
 import otpService from "../service/otpService.js";
 import BookingSlot from "../models/BookingSlotModel.js";
 import nodemailer from "nodemailer";
+import sendEmail from "../utils/sendEmail.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RazorpayId,
@@ -344,5 +345,49 @@ export const completedDoctorAppointments = async (req, res) => {
     res.status(200).json(completedAppointments);
   } catch (error) {
     res.status(500).json({ message: "Error fetching completed appointments" });
+  }
+};
+
+export const sendRescheduleRequest = async (req, res) => {
+  const { appointmentId } = req.params;
+  const { newSlots } = req.body; // newSlots is an array of available time slots
+  try {
+    const appointment = await BookingSlot.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const doctor = await Doctor.findById(appointment.doctor);
+
+    const user = await User.findById(appointment.user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    //Prepare email content with available slots
+    const emailContent = `
+ Hi ${user?.name},
+ Your appointment with Dr. ${doctor?.name} needs to be resheduled.
+ Please choose one of the following new available slots.
+
+ ${newSlots
+   .map(
+     (slot, index) =>
+       `slot ${index + 1}: ${slot.date} - ${slot.startTime} to ${slot.endTime}`
+   )
+   .join("\n")}
+
+   Click here to choose your new slot : <Reshedule Link> =>http://localhost:5173/user/reschedule/${appointmentId}
+ `;
+
+    sendEmail(user.email, "Appointment Resheduling", emailContent);
+    appointment.newSlots = newSlots;
+    await appointment.save();
+    res.status(200).json({
+      message: "Reshedule request sent to the user via email.",
+    });
+  } catch (error) {
+    console.error("Error sending reschedule request:", error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
