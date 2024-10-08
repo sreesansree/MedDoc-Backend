@@ -29,24 +29,49 @@ export const createBookingSlot = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const doctorId = decoded.id;
 
-    const slotDate = new Date(date);
+    // const slotDate = new Date(date);
+    // Parse the date string from the request body
+    const parsedDate = new Date(date);
 
-    const adjustedDate = new Date(slotDate.getTime());
+    // Set the time to 00:00:00 to ensure it represents the intended date
+    // slotDate.setHours(0, 0, 0, 0);
 
-    console.log("Adjusted Slot Date: ", adjustedDate);
-    if (isNaN(slotDate.getTime())) {
-      return res.status(400).json({ message: "Invalid date format" });
-    }
+    // console.log("Slot Date from slot Controller 33 : ", slotDate);
+    // const adjustedDate = new Date(slotDate.getTime());
+    
+    // console.log("Adjusted Slot Date: ", adjustedDate);
+    // if (isNaN(slotDate.getTime())) {
+      //   return res.status(400).json({ message: "Invalid date format" });
+      // }
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+      // Adjust the date to the local time zone (IST)
+      const slotDate = new Date(parsedDate.getTime() + 5.5 * 60 * 60 * 1000);
+      console.log("Slot Date from slot Controller 51 : ", slotDate);
+
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    console.log("todayy",today);
     if (slotDate < today) {
       return res
         .status(400)
         .json({ message: "Cannot create slots for past dates" });
     }
 
+    // If the slot date is today, check if the startTime is in the past
+    const currentTime = new Date();
+    if (slotDate.getTime() === today.getTime()) {
+      if (
+        parseTime(startTime) <=
+        currentTime.getHours() * 60 + currentTime.getMinutes()
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Cannot create slots for past times" });
+      }
+    }
     if (parseTime(startTime) >= parseTime(endTime)) {
       return res
         .status(400)
@@ -159,6 +184,7 @@ export const createBookingSlot = async (req, res) => {
       doctor: doctorId,
       fixedSlot,
     });
+    console.log("newSlots from createSlots 162", newSlot);
 
     await newSlot.save();
     res.status(201).json(newSlot);

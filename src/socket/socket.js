@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import cron from "node-cron";
 import BookingSlot from "../models/BookingSlotModel.js";
 import sendEmail from "../utils/sendEmail.js";
+import Notification from "../models/NotificationModel.js";
 
 const setupSocket = (server) => {
   const io = new Server(server, {
@@ -15,48 +16,80 @@ const setupSocket = (server) => {
 
   let activeUsers = [];
 
+  // console.log("Active User : ", activeUsers);
+
   io.on("connection", (socket) => {
-    // console.log("Connected to socket", socket.id);
     console.log(`⚡: ${socket.id} user just connected!`);
+
     // Chat and user management logic
-    /* add new user */
-    socket.on("new-user-add", (newUserId) => {
+    // Add new user to activeUsers
+    socket.on("new-user-add", async (newUserId) => {
       // if user is not added previously
-      console.log(newUserId, "New User Id");
       if (!activeUsers.some((user) => user.userId === newUserId)) {
         activeUsers.push({
           userId: newUserId,
           socketId: socket.id,
         });
       }
-      console.log("Connected Users ==> ", activeUsers);
+      // console.log("Connected Users ==> ", activeUsers);
       io.emit("get-users", activeUsers);
+
+      // Fetch stored notifications for the user
+      const storedNotifications = await Notification.find({ receiverId: newUserId });
+      if (storedNotifications.length > 0) {
+        io.to(socket.id).emit("getStoredNotifications", storedNotifications);
+        // Optionally, clear the notifications from the DB after sending
+        await Notification.deleteMany({ receiverId: newUserId });
+      }
+
+      // Emit stored notifications to the user
+      // socket.emit("getStoredNotifications", storedNotifications);
     });
 
     /* Send-messages */
     // Handle file and message sending
 
-    socket.on("send-message", (data) => {
-      console.log("Data from send-message ", data);
-      const { receiverId, senderId, senderName, text } = data;
+    socket.on("send-message", async (data) => {
+      const { receiverId, senderId, senderName, text, userType } = data;
       const user = activeUsers.find((user) => user.userId === receiverId);
 
-      if (user) {
-        1;
-        io.to(user.socketId).emit("receive-message", {
-          message: data.message,
-          file: data.file, // Include file URL
-          fileType: data.fileType, // Include file type
-          chatId: data.chatId,
-          text,
-        });
-        // Emit the notification with senderName
-        io.to(user.socketId).emit("getNotification", {
-          senderId: senderId,
-          senderName: senderName, // Include the senderName in the notification
-          isRead: false,
-          date: new Date(),
-        });
+      if (receiverId !== senderId) {
+        if (user) {
+          // Send real-time notification to the active user
+          io.to(user.socketId).emit("receive-message", {
+            message: data.message,
+            file: data.file, // Include file URL
+            fileType: data.fileType, // Include file type
+            chatId: data.chatId,
+            text,
+            senderId,
+            senderName,
+          });
+
+          // Emit real-time notification for the active user
+          io.to(user.socketId).emit("getNotification", {
+            senderId,
+            senderName,
+            isRead: false,
+            date: new Date(),
+            userType,
+          });
+        } else {
+          // User is offline, store the notification in the database
+          const newNotification = new Notification({
+            receiverId,
+            senderId,
+            senderName,
+            message: `You received a new message from ${senderName}`,
+            chatId: data.chatId,
+            isRead: false,
+            userType,
+            date: new Date(),
+          });
+          await newNotification.save(); // Save the notification in MongoDB
+          // Emit a "store-notification" event to the client
+          // io.emit("store-notification", newNotification);
+        }
       }
     });
 
@@ -68,7 +101,7 @@ const setupSocket = (server) => {
         activeUsers
       );
       io.emit("get-users", activeUsers);
-      console.log(`❌: ${socket.id} user disconnected.`);
+      console.log(`❌: ${socket.id} user just disconnected.`);
     });
   });
 
@@ -76,7 +109,8 @@ const setupSocket = (server) => {
   async function sendAppointmentReminders() {
     const now = new Date();
     const nextHour = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour ahead in UTC
-
+    console.log("now 102:", now);
+    console.log("now 102:", nextHour);
     // Convert `now` and `nextHour` to the local time (IST)
     const nowLocal = new Date(
       now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 60 * 60 * 1000
@@ -86,11 +120,15 @@ const setupSocket = (server) => {
         nextHour.getTimezoneOffset() * 60000 +
         5.5 * 60 * 60 * 1000
     );
+    console.log("Now Local time : ", nowLocal);
+    console.log(" Next hour local time : ", nextHourLocal);
 
     try {
       const allSlots = await BookingSlot.find({ isBooked: true }).populate(
         "doctor user"
       );
+
+      console.log("All Slots reminder 120 : ", allSlots);
 
       console.log(
         "All Slots from Socket Reminder ===> ",
@@ -107,6 +145,8 @@ const setupSocket = (server) => {
 
         const slotEndTime = new Date(slot.date);
         slotEndTime.setUTCHours(endHour, endMinute);
+        console.log("Slots StartTime from slotss 135 :", slotStartTime);
+        console.log("Slots EndTime from slotss 136 :", slotEndTime);
 
         // Adjust slot times to the local time zone (IST)
         const slotStartTimeLocal = new Date(
@@ -114,11 +154,16 @@ const setupSocket = (server) => {
             slotStartTime.getTimezoneOffset() * 60000 +
             5.5 * 60 * 60 * 1000
         );
+        console.log(
+          "Slots StartTime Local from slotss 145 :",
+          slotStartTimeLocal
+        );
         const slotEndTimeLocal = new Date(
           slotEndTime.getTime() +
             slotEndTime.getTimezoneOffset() * 60000 +
             5.5 * 60 * 60 * 1000
         );
+        console.log("Slots EndTime Local from slotss 153 :", slotEndTimeLocal);
 
         console.log(
           `Slot Start Local: ${slotStartTimeLocal}, Slot End Local: ${slotEndTimeLocal}`
@@ -134,6 +179,7 @@ const setupSocket = (server) => {
       slots.forEach(async (slot) => {
         const formattedDate = slot.date.toLocaleDateString();
         const time = slot.startTime;
+        console.log("Formatted Date from reminder listner", formattedDate);
 
         if (!slot.patientReminderSent && slot.user) {
           // Send real-time reminder via Socket.io
