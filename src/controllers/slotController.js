@@ -11,11 +11,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: "rzp_test_UcDBe76bA1MvsD",
+  key_secret: "ePqoV9RPFiYgcjULeLyXj6ui",
+  // key_id: process.env.RAZORPAY_KEY_ID,
+  // key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
-console.log("PORTTTT :", process.env.PORT);
-console.log("process.env.RAZORPAY_KEY_ID", process.env.RAZORPAY_KEY_ID);
+// RAZORPAY_KEY_ID=rzp_test_UcDBe76bA1MvsD
+// RAZORPAY_KEY_SECRET=ePqoV9RPFiYgcjULeLyXj6ui
+
 const parseTime = (time) => {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
