@@ -246,7 +246,8 @@ export const bookSlotWithPayment = async (req, res) => {
       orderId: order.id,
       amount: slot.price * 100,
       currency: "INR",
-      key_id: process.env.RAZORPAY_KEY_ID,
+      // key_id: process.env.RAZORPAY_KEY_ID,
+      key_id: "rzp_test_UcDBe76bA1MvsD",
     });
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
