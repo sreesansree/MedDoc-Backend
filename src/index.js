@@ -50,6 +50,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRoutes);
 
 const server = app.listen(PORT, () => {
+  
   console.log(`server is Runnig on ${PORT}`);
 });
 

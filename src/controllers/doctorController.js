@@ -23,8 +23,8 @@ import nodemailer from "nodemailer";
 import sendEmail from "../utils/sendEmail.js";
 
 const razorpay = new Razorpay({
-  key_id: process.env.RazorpayId,
-  key_secret: process.env.RazorpayKeySecret,
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 export const registerDoctor = asyncHandler(async (req, res) => {

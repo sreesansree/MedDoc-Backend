@@ -7,11 +7,15 @@ import Doctor from "../models/DoctorModel.js";
 import User from "../models/UserModel.js";
 import sendEmail from "../utils/sendEmail.js";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RazorpayId,
-  key_secret: process.env.RazorpayKeySecret,
-});
+import dotenv from "dotenv";
+dotenv.config();
 
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+console.log("PORTTTT :", process.env.PORT);
+console.log("process.env.RAZORPAY_KEY_ID", process.env.RAZORPAY_KEY_ID);
 const parseTime = (time) => {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
@@ -38,22 +42,21 @@ export const createBookingSlot = async (req, res) => {
 
     // console.log("Slot Date from slot Controller 33 : ", slotDate);
     // const adjustedDate = new Date(slotDate.getTime());
-    
+
     // console.log("Adjusted Slot Date: ", adjustedDate);
     // if (isNaN(slotDate.getTime())) {
-      //   return res.status(400).json({ message: "Invalid date format" });
-      // }
-      if (isNaN(parsedDate.getTime())) {
-        return res.status(400).json({ message: "Invalid date format" });
-      }
-      // Adjust the date to the local time zone (IST)
-      const slotDate = new Date(parsedDate.getTime() + 5.5 * 60 * 60 * 1000);
-      console.log("Slot Date from slot Controller 51 : ", slotDate);
-
+    //   return res.status(400).json({ message: "Invalid date format" });
+    // }
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+    // Adjust the date to the local time zone (IST)
+    const slotDate = new Date(parsedDate.getTime() + 5.5 * 60 * 60 * 1000);
+    console.log("Slot Date from slot Controller 51 : ", slotDate);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    console.log("todayy",today);
+    console.log("todayy", today);
     if (slotDate < today) {
       return res
         .status(400)
@@ -240,7 +243,7 @@ export const bookSlotWithPayment = async (req, res) => {
       orderId: order.id,
       amount: slot.price * 100,
       currency: "INR",
-      key_id: process.env.RazorpayId,
+      key_id: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
@@ -251,7 +254,7 @@ export const bookSlotWithPayment = async (req, res) => {
 export const verifyPayment = async (req, res) => {
   const { orderId, paymentId, signature } = req.body;
   const generatedSignature = crypto
-    .createHmac("sha256", process.env.RazorpayKeySecret)
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${orderId}|${paymentId}`)
     .digest("hex");
 
