@@ -10,6 +10,12 @@ import doctorRoutes from "./routes/doctorRoute.js";
 import setupSocket from "./socket/socket.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoute.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Manually create __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // import path from "path";
 
 // import { fileURLToPath } from "url";
@@ -23,6 +29,23 @@ connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Define the path to the frontend build directory
+const buildPath = path.join(__dirname, "../../frontend/dist");
+
+// Serve static files from the frontend build folder
+app.use(express.static(buildPath));
+
+app.get("/*", function (req, res) {
+  res.sendFile(
+    path.join(__dirname, "../../frontend/dist/index.html"),
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      }
+    }
+  );
+});
 
 app.use(morgan("dev"));
 
@@ -50,7 +73,6 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRoutes);
 
 const server = app.listen(PORT, () => {
-  
   console.log(`server is Runnig on ${PORT}`);
 });
 
