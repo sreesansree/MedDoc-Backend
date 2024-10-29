@@ -379,8 +379,9 @@ export const sendRescheduleRequest = async (req, res) => {
    )
    .join("\n")}
 
-   Click here to choose your new slot : <Reshedule Link> =>http://localhost:5173/user/reschedule/${appointmentId}
- `;
+   Click here to choose your new slot : <Reshedule Link> =>https://puthumana.site/user/reschedule/${appointmentId}
+   `;
+  //  Click here to choose your new slot : <Reshedule Link> =>http://localhost:5173/user/reschedule/${appointmentId}
 
     sendEmail(user.email, "Appointment Resheduling", emailContent);
     appointment.newSlots = newSlots;
