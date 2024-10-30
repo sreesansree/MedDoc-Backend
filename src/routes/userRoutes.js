@@ -15,6 +15,7 @@ import {
   canceledUserAppointments,
   getCompletedUserAppointments,
   rateDoctor,
+  changePassword,
   // getUser,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -49,7 +50,7 @@ router.get("/doctors", doctorsList);
 router.post("/forget-password", initiatePasswordReset);
 router.post("/reset-password", completePasswordReset);
 router.put("/update/:userId", protect, updateUser);
-
+router.put("/change-password/:userId", protect, changePassword);
 // Book a Slot
 // router.patch("/book-slot/:slotId", protect, authorize("user"), bookSlot);
 // router.patch("/slots/:id", protect, isUser, bookSlot);
@@ -78,7 +79,11 @@ router.get(
 //Route to rate-doctor
 router.post("/rate-doctor", protect, rateDoctor);
 // Get rescheduled slots
-router.get('/reschedule-slots/:appointmentId',protect,getAvailableRescheduledSlots)
+router.get(
+  "/reschedule-slots/:appointmentId",
+  protect,
+  getAvailableRescheduledSlots
+);
 //Route for user to select a new slot
 router.put("/select-slot/:appointmentId", protect, selectNewSlot);
 

@@ -209,6 +209,24 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
+export const changePassword = async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: "Current password is incorrect" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getDoctor = async (req, res) => {
   console.log("DoctorId from getDoctor ==>", req.params._id);
   try {
