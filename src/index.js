@@ -28,11 +28,11 @@ app.use(morgan("dev"));
 
 // Configure CORS
 const corsOptions = {
-  origin: "http://localhost:5173", // Allow only this origin
+  origin: ["http://localhost:5173", "https://puthumana.site"], // Allow only this origin
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true, // Allow cookies to be sent with requests
   optionsSuccessStatus: 204,
-};
+};  
 
 app.use(cors(corsOptions));
 app.use(express.json({ extended: true, limit: "500mb" }));
