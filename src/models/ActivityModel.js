@@ -22,15 +22,7 @@ const activitySchema = new mongoose.Schema(
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
-    }, // Reference to Doctor model
-    time: {
-      type: String,
-      required: true,
-    }, // e.g., '5 mins ago'
-    badgeColor: {
-      type: String,
-      required: true,
-    }, // e.g., 'info', 'success'
+    }, // Reference to Doctor model  
   },
   {
     timestamps: true,

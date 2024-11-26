@@ -6,6 +6,7 @@ import User from "../models/UserModel.js";
 import Activity from "../models/ActivityModel.js";
 import sendEmail from "../utils/sendEmail.js";
 import BookingSlot from "../models/BookingSlotModel.js";
+import moment from "moment";
 // Login admin
 
 export const loginAdmin = asyncHandler(async (req, res) => {
@@ -100,6 +101,17 @@ export const getPendingSlots = async (req, res) => {
   }
 };
 
+// Get All appointments
+
+export const getAppointments = async (req, res) => {
+  try {
+    const appointments = await BookingSlot.find({});
+    res.status(200).json(appointments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Block a user
 export const blockUser = async (req, res) => {
   const { id } = req.params;
@@ -138,6 +150,13 @@ export const approveDoctor = async (req, res) => {
     doctor.isApproved = true;
     doctor.status = "approved"; // Update status
     await doctor.save();
+
+    await Activity.create({
+      type: "doctor_approved",
+      description: "Doctor approved",
+      name: doctor.name, // The name of the doctor
+      doctorId: doctor._id, // Reference the doctor ID
+    });
 
     // Send approval email
     const subject = "MedDoc - Doctor Application Approved";
@@ -210,12 +229,39 @@ export const unblockDoctor = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// Helper function to get badge color based on activity type
+const getBadgeColor = (type) => {
+  switch (type) {
+    case "user_registered":
+      return "success";
+    case "appointment_booked":
+      return "info";
+    case "doctor_approved":
+      return "warning";
+    default:
+      return "info";
+  }
+};
 
 // recent activities
 export const recentActivity = async (req, res) => {
   try {
-    const activities = await Activity.find().sort({ createdAt: -1 }).limit(10);
-    res.status(200).json(activities);
+    const activities = await Activity.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean()
+      .populate("userId doctorId");
+
+    console.log("activity : ", activities);
+    // Add formatted fields to each activity
+    const formattedActivities = activities.map((activity) => ({
+      ...activity,
+      timeAgo: moment(activity.createdAt).fromNow(), // e.g., '5 minutes ago'
+      badgeColor: getBadgeColor(activity.type),
+    }));
+    console.log("formattedActivities : ", formattedActivities);
+
+    res.status(200).json(formattedActivities);
   } catch (error) {
     res.status(500).json({ message: "Error fetching recent activities" });
   }

@@ -16,9 +16,10 @@ import {
   initiateAdminPasswordReset,
   completeAdminPasswordReset,
   getPendingSlots,
+  getAppointments,
 } from "../controllers/adminController.js";
 import { isAdmin } from "../middleware/roleMiddleware.js";
-import { protectAdmin } from "../middleware/authMiddleware.js";
+import { protect, protectAdmin } from "../middleware/authMiddleware.js";
 import departmentRoutes from "./department.route.js";
 
 const router = express.Router();
@@ -51,5 +52,8 @@ router.use("/departments", departmentRoutes);
 
 //Get Pending Slots
 router.get("/upcoming-slots", protectAdmin, getPendingSlots);
+
+// Get Appointments
+router.get('/all-appointments',protectAdmin,getAppointments)
 
 export default router;

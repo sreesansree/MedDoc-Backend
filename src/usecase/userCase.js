@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/authUtils.js";
 import Doctor from "../models/DoctorModel.js";
 import BookingSlot from "../models/BookingSlotModel.js";
+import { logActivity } from "../utils/logActivity.js";
 
 const registerUser = async ({ name, email, mobile, password }) => {
   const userExists = await User.findOne({ email });
@@ -26,6 +27,14 @@ const registerUser = async ({ name, email, mobile, password }) => {
   await user.save();
   await otpService.sendOTP(email, otp);
 
+   // Optional activity log for user registration before verification
+   await logActivity(
+    "user_registered_pending",
+    `User registered, awaiting verification:`,
+    user.name,
+    user._id
+  );
+
   return { message: "User registered, please veriify your email" };
 };
 
@@ -42,6 +51,13 @@ const verifyOTP = async ({ email, otp }) => {
   user.isVerified = true;
   user.otp = null;
   await user.save();
+  await logActivity(
+    "user_registered",
+    `New user registered: ${user.name}`,
+    user.name,
+    user._id
+  );
+
   return { message: "User verified,you can now login" };
 };
 

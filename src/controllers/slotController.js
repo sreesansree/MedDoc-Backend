@@ -8,6 +8,8 @@ import User from "../models/UserModel.js";
 import sendEmail from "../utils/sendEmail.js";
 
 import dotenv from "dotenv";
+import Activity from "../models/ActivityModel.js";
+import { logActivity } from "../utils/logActivity.js";
 dotenv.config();
 
 const razorpay = new Razorpay({
@@ -241,6 +243,12 @@ export const bookSlotWithPayment = async (req, res) => {
 
     slot.orderId = order.id;
     await slot.save();
+    await logActivity(
+      "appointment_booked",
+      "New appointment booked by",
+      slot?.user?.name,
+      slot?.user?._id
+    );
 
     res.status(200).json({
       orderId: order.id,
