@@ -20,19 +20,32 @@ import messageRoutes from "./routes/messageRoute.js";
 dotenv.config();
 connectDB();
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(morgan("dev"));
 
 // Configure CORS
+// const corsOptions = {
+//   origin: [
+//     "http://localhost:5173",
+//     "https://puthumana.site",
+//     "https://peppy-sfogliatella-ed8557.netlify.app/",
+//   ], // Allow only this origin
+//   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+//   credentials: true, // Allow cookies to be sent with requests
+//   optionsSuccessStatus: 204,
+// };
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://puthumana.site"], // Allow only this origin
+  origin: [
+    "http://localhost:5173",
+    "https://meddoctor.online",
+    "https://peppy-sfogliatella-ed8557.netlify.app/",
+  ], // Allow only this origin
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true, // Allow cookies to be sent with requests
   optionsSuccessStatus: 204,
-};  
+};
 
 app.use(cors(corsOptions));
 app.use(express.json({ extended: true, limit: "500mb" }));
@@ -48,7 +61,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/messages", messageRoutes);
-
 
 // Define the path to the frontend build directory
 // const buildPath = path.join(__dirname, "../../frontend/dist");
@@ -66,7 +78,6 @@ app.use("/api/messages", messageRoutes);
 //     }
 //   );
 // });
-
 
 const server = app.listen(PORT, () => {
   console.log(`server is Runnig on ${PORT}`);

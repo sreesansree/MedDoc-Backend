@@ -252,7 +252,7 @@ export const recentActivity = async (req, res) => {
       .lean()
       .populate("userId doctorId");
 
-    console.log("activity : ", activities);
+    // console.log("activity : ", activities);
     // Add formatted fields to each activity
     const formattedActivities = activities.map((activity) => ({
       ...activity,
