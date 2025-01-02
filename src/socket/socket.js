@@ -8,7 +8,11 @@ const setupSocket = (server) => {
   const io = new Server(server, {
     pingTimeout: 60000,
     cors: {
-      origin: ["http://localhost:5173","https://puthumana.site"],
+      origin: [
+        "http://localhost:5173",
+        "https://meddoctor.online",
+        "https://peppy-sfogliatella-ed8557.netlify.app",
+      ],
       methods: ["GET", "POST"],
       credentials: true,
     },
