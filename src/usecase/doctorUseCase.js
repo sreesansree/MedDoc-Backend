@@ -194,15 +194,21 @@ export const completePasswordResetUseCase = async (
   enteredOtp,
   newPassword
 ) => {
+  if (!email || !enteredOtp || !newPassword) {
+    throw new Error("Email, OTP, and new password are required.");
+  }
   const doctor = await Doctor.findOne({ email });
 
   // console.log(doctor,'docotorrrr');
-  if (
-    !doctor ||
-    !otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)
-  ) {
-    throw new Error("Invalid OTP or OTP has Expired");
+  // Ensure doctor exists
+  if (!doctor) {
+    throw new Error("No user found with the provided email.");
   }
+  // Validate OTP
+  if (!otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)) {
+    throw new Error("Invalid OTP or OTP has expired.");
+  }
+  
   doctor.password = await hashPassword(newPassword);
   doctor.otp = undefined;
   doctor.otpExpires = undefined;
