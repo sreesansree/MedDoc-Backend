@@ -11,7 +11,7 @@ const setupSocket = (server) => {
       origin: [
         "http://localhost:5173",
         "https://meddoctor.online",
-        "https://peppy-sfogliatella-ed8557.netlify.app",
+        "https://doctormed.netlify.app/",
       ],
       methods: ["GET", "POST"],
       credentials: true,
@@ -122,16 +122,11 @@ const setupSocket = (server) => {
         }
       }
     });
-    console.log("---------------------- ");
-    console.log("activeUserss : ", activeUsers);
-    console.log("---------------------- ");
+   
     // Disconnect logic
     socket.on("disconnect", () => {
       activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
-      console.log(
-        "Active user Disconnected and Remaining users ==>  ",
-        activeUsers
-      );
+     
       io.emit("get-users", activeUsers);
       console.log(`❌: ${socket.id} user just disconnected.`);
     });
@@ -141,9 +136,7 @@ const setupSocket = (server) => {
   async function sendAppointmentReminders() {
     const now = new Date();
     const nextHour = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour ahead in UTC
-    // console.log("now 102:", now);
-    // console.log("now 102:", nextHour);
-    // Convert `now` and `nextHour` to the local time (IST)
+    
     const nowLocal = new Date(
       now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 60 * 60 * 1000
     );
@@ -152,20 +145,13 @@ const setupSocket = (server) => {
         nextHour.getTimezoneOffset() * 60000 +
         5.5 * 60 * 60 * 1000
     );
-    // console.log("Now Local time : ", nowLocal);
-    // console.log(" Next hour local time : ", nextHourLocal);
+
 
     try {
       const allSlots = await BookingSlot.find({ isBooked: true }).populate(
         "doctor user"
       );
 
-      // console.log("All Slots reminder 120 : ", allSlots);
-
-      // console.log(
-      //   "All Slots from Socket Reminder ===> ",
-      //   allSlots.map((slot) => slot.date)
-      // );
 
       const slots = allSlots.filter((slot) => {
         // Combine slot date with startTime and endTime to create DateTime objects
@@ -177,42 +163,31 @@ const setupSocket = (server) => {
 
         const slotEndTime = new Date(slot.date);
         slotEndTime.setUTCHours(endHour, endMinute);
-        // console.log("Slots StartTime from slotss 135 :", slotStartTime);
-        // console.log("Slots EndTime from slotss 136 :", slotEndTime);
-
+ 
         // Adjust slot times to the local time zone (IST)
         const slotStartTimeLocal = new Date(
           slotStartTime.getTime() +
             slotStartTime.getTimezoneOffset() * 60000 +
             5.5 * 60 * 60 * 1000
         );
-        // console.log(
-        //   "Slots StartTime Local from slotss 145 :",
-        //   slotStartTimeLocal
-        // );
+  
         const slotEndTimeLocal = new Date(
           slotEndTime.getTime() +
             slotEndTime.getTimezoneOffset() * 60000 +
             5.5 * 60 * 60 * 1000
         );
-        // console.log("Slots EndTime Local from slotss 153 :", slotEndTimeLocal);
-
-        // console.log(
-        //   `Slot Start Local: ${slotStartTimeLocal}, Slot End Local: ${slotEndTimeLocal}`
-        // );
+     
 
         return (
           slotStartTimeLocal >= nowLocal && slotStartTimeLocal <= nextHourLocal
         );
       });
 
-      // console.log("Slots from Socket Reminder ===> ", slots);
 
       slots.forEach(async (slot) => {
         const formattedDate = slot.date.toLocaleDateString();
         const time = slot.startTime;
-        // console.log("Formatted Date from reminder listner", formattedDate);
-
+  
         if (!slot.patientReminderSent && slot.user) {
           // Send real-time reminder via Socket.io
           io.to(slot.user._id.toString()).emit("appointmentReminder", {
