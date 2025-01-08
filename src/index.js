@@ -40,7 +40,7 @@ const corsOptions = {
   origin: [
     "http://localhost:5173",
     "https://meddoctor.online",
-    "https://doctormed.netlify.app/",
+    "https://doctormed.netlify.app",
   ], // Allow only this origin
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true, // Allow cookies to be sent with requests

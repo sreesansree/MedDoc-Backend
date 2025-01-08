@@ -11,7 +11,7 @@ const setupSocket = (server) => {
       origin: [
         "http://localhost:5173",
         "https://meddoctor.online",
-        "https://doctormed.netlify.app/",
+        "https://doctormed.netlify.app",
       ],
       methods: ["GET", "POST"],
       credentials: true,
