@@ -42,7 +42,7 @@ import Doctor from "../models/DoctorModel.js";
 
 const authenticateUser = async (email, password) => {
   const user = await User.findOne({ email });
-  // console.log(user)
+  
   if (user && (await bcrypt.compare(password, user.password))) {
     if (!user.isVerified) {
       throw new Error("User not verified");

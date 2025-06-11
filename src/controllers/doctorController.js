@@ -21,6 +21,7 @@ import otpService from "../service/otpService.js";
 import BookingSlot from "../models/BookingSlotModel.js";
 import nodemailer from "nodemailer";
 import sendEmail from "../utils/sendEmail.js";
+import mongoose from "mongoose";
 
 const razorpay = new Razorpay({
   key_id: "rzp_test_UcDBe76bA1MvsD",
@@ -94,7 +95,8 @@ export const loginDoctor = asyncHandler(async (req, res) => {
 export const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
-    const doctor = await Doctor.findOne({ email });
+    const doctor = await Doctor.findOne({ email }).populate("department");
+
     if (doctor) {
       const token = await authService.generateToken(doctor);
       const { password, ...rest } = doctor._doc;
@@ -171,7 +173,6 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id;
-    console.log("Doctor ID : ", doctorId);
     const appointments = await getAppointmentByDoctorID(doctorId);
     res.status(200).json(appointments);
   } catch (error) {
@@ -182,7 +183,7 @@ export const getDoctorAppointments = async (req, res) => {
 
 export const getDoctor = async (req, res) => {
   const id = req.params.id;
-  console.log("'Params Id in Doctor Route Get User ====>  ", id);
+  // console.log("'Params Id in Doctor Route Get User ====>  ", id);
   try {
     const user = await User.findById(id);
     if (user) {
@@ -198,7 +199,7 @@ export const getDoctor = async (req, res) => {
 
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  console.log("user Id from Get User : ", req.params.id);
+  // console.log("user Id from Get User : ", req.params.id);
   try {
     const user = await User.findById(id);
     // console.log("user ====>", user);
@@ -214,10 +215,21 @@ export const getUser = async (req, res) => {
 export const cancelAppointment = async (req, res) => {
   const { id } = req.params;
   const { reason } = req.body;
+
   let refundSuccess = false;
   try {
-    const appointment = await BookingSlot.findById(id).populate("user doctor");
+    console.log("Starting cancellation process for appointment:", id);
 
+    // 1. Verify database connection
+    try {
+      await mongoose.connection.db.admin().ping();
+      console.log("Database connection verified");
+    } catch (dbError) {
+      console.error("Database connection error:", dbError);
+      throw new Error("Database connection failed");
+    }
+
+    const appointment = await BookingSlot.findById(id).populate("user doctor");
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
@@ -229,14 +241,70 @@ export const cancelAppointment = async (req, res) => {
     }
 
     // Initiate refund via Razorpay
-    const refundResponse = await razorpay.payments.refund(
-      appointment.paymentId
-    );
+    // Log paymentId for debugging
+    console.log("Refunding payment ID:", appointment.paymentId);
+    // console.log("Appointment:", appointment);
+    // Initiate refund via Razorpay
+    // const refundResponse = await razorpay.refunds.create({
+    //   payment_id: appointment.paymentId,
+    //   notes: {
+    //     reason: reason || "No reason provided",
+    //   },
+    // });
 
-    if (!refundResponse || refundResponse.status !== "processed") {
-      return res
-        .status(500)
-        .json({ message: "Refund failed, please try again." });
+    // 3. Verify payment status first
+    const payment = await razorpay.payments.fetch(appointment.paymentId);
+    console.log("Payment status:", payment.status);
+
+    if (payment.status !== "captured") {
+      return res.status(400).json({
+        message: `Payment is not in a refundable state (current status: ${payment.status})`,
+      });
+    }
+    // 4. Prepare refund with proper parameters
+    const refundResponse = await razorpay.payments.refund(
+      appointment.paymentId,
+      {
+        amount: appointment.price * 100, // in paise
+        speed: "normal",
+        notes: {
+          reason: reason || "Appointment cancellation",
+          appointment_id: id,
+        },
+      },
+      {
+        timeout: 10000, // 10 second timeout
+      }
+    );
+    // const refundResponse = await razorpay.payments.refund(
+    //   appointment.paymentId,
+    //   {
+    //     amount: appointment.price * 100, // Convert ₹ to paise (500 * 100 = 50000)
+    //     speed: "normal",
+    //     notes: {
+    //       reason: reason || "Appointment cancellation",
+    //       appointment_id: appointment._id.toString(),
+    //       doctor_id: appointment.doctor._id.toString(),
+    //       user_id: appointment.user._id.toString(),
+    //     },
+    //   }
+    // );
+
+    console.log("Refund Response : ", refundResponse);
+    // if (!refundResponse || refundResponse.status !== "processed") {
+    //   return res
+    //     .status(500)
+    //     .json({ message: "Refund failed, please try again." });
+    // }
+    if (
+      !refundResponse ||
+      (refundResponse.status !== "processed" &&
+        refundResponse.status !== "created")
+    ) {
+      return res.status(500).json({
+        message: "Refund initiation failed",
+        details: refundResponse,
+      });
     }
     refundSuccess = true;
     // Update the appointment status to canceled
@@ -275,7 +343,12 @@ export const cancelAppointment = async (req, res) => {
       message: "Appointment canceled and refund processed successfully.",
     });
   } catch (error) {
-    console.error("Error cancelling appointment:", error);
+    console.error("Detailed error cancelling appointment:", {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+      code: error.code,
+    });
     res
       .status(500)
       .json({ message: "Server error, could not cancel appointment." });
@@ -341,9 +414,7 @@ export const completeConsultation = async (req, res) => {
 export const completedDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id;
-    console.log("Doctor Id From completed Appointment : ", doctorId);
     const completedAppointments = await getCompletedAppointments(doctorId);
-    console.log("Completed Appointments : ", completedAppointments);
     res.status(200).json(completedAppointments);
   } catch (error) {
     res.status(500).json({ message: "Error fetching completed appointments" });
@@ -380,8 +451,8 @@ export const sendRescheduleRequest = async (req, res) => {
    .join("\n")}
 
    Click here to choose your new slot : <Reshedule Link> =>https://puthumana.site/user/reschedule/${appointmentId}
+    Click here to choose your new slot : <Reshedule Link> =>http://localhost:5173/user/reschedule/${appointmentId}
    `;
-  //  Click here to choose your new slot : <Reshedule Link> =>http://localhost:5173/user/reschedule/${appointmentId}
 
     sendEmail(user.email, "Appointment Resheduling", emailContent);
     appointment.newSlots = newSlots;
@@ -394,4 +465,3 @@ export const sendRescheduleRequest = async (req, res) => {
     res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
-

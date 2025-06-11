@@ -64,8 +64,7 @@ const verifyOTP = async ({ email, otp }) => {
 const loginUser = async ({ email, password }) => {
   const user = await authService.authenticateUser(email, password);
   const token = user.token;
-  console.log(token);
-  console.log(user, "user from login userCase");
+
   return { user, token };
 };
 
@@ -88,13 +87,10 @@ export const completePasswordResetUseCase = async (
   newPassword
 ) => {
   const user = await User.findOne({ email });
-  // console.log(user,'userrrrrrrrr')
   if (!user || !otpService.validateOtp(user.otp, user.otpExpires, enteredOtp)) {
     throw new Error("Invalid OTP or OTP has Expired");
   }
-  // console.log('Hashing password:', newPassword);
   user.password = await hashPassword(newPassword);
-  // console.log(user.password);
   user.otp = undefined;
   user.otpExpires = undefined;
 

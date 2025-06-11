@@ -69,7 +69,7 @@ router.get("/doctor-appointments/:id", getAppointment);
 // Route to Cancel Appointment
 router.post(
   "/doctor-appointments/:id/cancel",
-  protectDoctor,
+  // protectDoctor,
   cancelAppointment
 );
 // Route to get Canceled Appointment

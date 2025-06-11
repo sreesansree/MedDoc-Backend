@@ -133,7 +133,7 @@ export const loginDoctorUseCase = async (email, password) => {
     throw new Error("please fill all the field");
     // return errorHandler(400, "please fill all the field");
   }
-  const doctor = await Doctor.findOne({ email });
+  const doctor = await Doctor.findOne({ email }).populate("department");
   if (!doctor) {
     throw new Error("Doctor not Found");
     // return errorHandler(400, "Doctor not Found");
@@ -208,7 +208,7 @@ export const completePasswordResetUseCase = async (
   if (!otpService.validateOtp(doctor.otp, doctor.otpExpires, enteredOtp)) {
     throw new Error("Invalid OTP or OTP has expired.");
   }
-  
+
   doctor.password = await hashPassword(newPassword);
   doctor.otp = undefined;
   doctor.otpExpires = undefined;
@@ -258,11 +258,31 @@ export const doctorProfilUpdateUseCase = async (doctorId, req) => {
 
 export const getAppointmentByDoctorID = async (doctorId) => {
   try {
+    const now = new Date();
+    const today = now.toISOString().split("T")[0]; // "YYYY-MM-DD"
+    const currentTime = now.toTimeString().substring(0, 5); // "HH:MM"
+
+    // return await BookingSlot.find({
+    //   doctor: doctorId,
+    //   isBooked: true,
+    //   status: "upcoming",
+    // }).populate("user");
     return await BookingSlot.find({
       doctor: doctorId,
       isBooked: true,
       status: "upcoming",
-    }).populate("user");
+      $or: [
+        {
+          date: { $gt: today }, // Future dates
+        },
+        {
+          date: today,
+          startTime: { $gte: currentTime }, // Today's future slots
+        },
+      ],
+    })
+      .populate("user")
+      .sort({ date: 1, startTime: 1 });
   } catch (error) {
     throw new Error("Error fetching appointments: " + error.message);
   }

@@ -204,7 +204,7 @@ export const createBookingSlot = async (req, res) => {
 
 export const getDoctorsSlots = async (req, res) => {
   const { id } = req.params;
-
+  console.log("Paramsssss",req.params);
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid doctor ID" });
@@ -213,7 +213,7 @@ export const getDoctorsSlots = async (req, res) => {
     const slots = await BookingSlot.find({
       doctor: id,
     });
-    // console.log("Slotssssssss ================",slots)
+    console.log("Slotssssssss ================", slots);
 
     res.status(200).json(slots);
   } catch (error) {

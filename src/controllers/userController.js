@@ -60,7 +60,6 @@ export const loginUser = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
-    console.log(response.user, ": response userrrr from controller");
     res.status(200).json(response.user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -228,7 +227,7 @@ export const changePassword = async (req, res, next) => {
 };
 
 export const getDoctor = async (req, res) => {
-  console.log("DoctorId from getDoctor ==>", req.params._id);
+  // console.log("DoctorId from getDoctor ==>", req.params.id);
   try {
     const doctor = await userUseCase.getDoctorById(req.params.id);
     // console.log(doctor, "Single Doctor Fetched");

@@ -29,6 +29,7 @@ import {
   cancelAppointment,
   getAppointment,
   getAvailableRescheduledSlots,
+  getDoctorsSlots,
   selectNewSlot,
   // getCanceledAppointmentsUser,
   verifyPayment,
@@ -56,10 +57,13 @@ router.put("/change-password/:userId", protect, changePassword);
 // router.patch("/slots/:id", protect, isUser, bookSlot);
 
 //Get single Doctor
-router.get("/doctor/:id", protect, getDoctor);
+router.get("/doctor/:id", getDoctor);
 
 // Route to book a slot with payment
 router.post("/book-slot/:slotId", bookSlotWithPayment);
+// Route to get doctors slot
+router.get("/slots/:id", getDoctorsSlots);
+
 // Route to verify payment
 router.post("/verify-payment", protect, verifyPayment);
 // Route to Get Appointments
